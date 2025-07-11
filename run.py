@@ -8,10 +8,10 @@ from model import EnglishAuctionModel
 parameters = {
     'n_bidders': 5,
     'common_value': 1000,  # True value of the item
-    'signal_std': 150,     # More noise for diverse initial signals
-    'start_price': 600,    # Start closer to true value
-    'price_increment': 20, # Smaller increments for gradual learning
-    'steps': 25,           # Sufficient rounds for convergence
+    'signal_std': 200,     # Increased noise for more realistic signals
+    'start_price': 400,    # Lower starting price
+    'price_increment': 25, # Reasonable increment
+    'steps': 30,           # More rounds to allow convergence
 }
 
 print("Running English Auction Simulation")
