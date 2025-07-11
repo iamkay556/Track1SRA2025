@@ -81,7 +81,7 @@ class EnglishAuctionModel(ap.Model):
         print('Processing results...')
         valuation_matrix = np.array([b.valuation_history for b in self.bidders])
         
-        # Calculate convergence metrics
+            # Calculate convergence metrics
         final_valuations = [b.valuation_history[-1] for b in self.bidders]
         avg_final_valuation = np.mean(final_valuations)
         valuation_std = np.std(final_valuations)
