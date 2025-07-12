@@ -9,7 +9,7 @@ classdef BidderClass_Rational < BidderClass
             a = 1/3;
             b = (2/3) * (biddersOut / numBidders);
             c = (2/3) * (biddersIn / numBidders);
-            
+
             if (~isempty(dropOutPrices))
                 avg = mean(dropOutPrices);
                 % if (length(dropOutPrices) >= 3)
@@ -21,11 +21,12 @@ classdef BidderClass_Rational < BidderClass
             else
                 avg = 0;
             end
-
+            
+            [~, l] = size(obj.vals);
             P = obj.signal;
             %* (1 + 0.5*(log(biddersIn) / log(numBidders)));
 
-            [~, l] = size(obj.vals);
+            
             obj.vals(1, l + 1) = a * obj.vals(1, l) + b * avg + c * P;
         end
     end
