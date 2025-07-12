@@ -3,7 +3,7 @@ clear; clc; close all;
 
 % Values to pass into auction object
 commonVal = 1000;
-rStndDv = 50;
+rStndDv = 150;
 startPrice = 500;
 priceIncrement = 20;
 

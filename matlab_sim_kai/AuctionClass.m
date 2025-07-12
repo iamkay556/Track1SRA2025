@@ -141,7 +141,7 @@ classdef AuctionClass
                         
                         % Update valuation if still in
                         if b.stillIn
-                            b = b.updateVal(obj.time, obj.numBidders, obj.biddersIn, obj.dropOutPrices, obj.price);
+                            b = b.updateVal(obj.time, obj.numBidders, obj.biddersIn, obj.dropOutPrices, obj.price, obj.rStndDv);
 
                             % Update biddersIn tracker
                             obj.biddersIn(1, obj.time) = obj.biddersIn(1, obj.time) + 1;
