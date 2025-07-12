@@ -1,0 +1,29 @@
+classdef BidderClass_Rational < BidderClass
+
+    methods
+        % Update valuation
+        function obj = updateVal(obj, time, numBidders, biddersInmtx, dropOutPrices, price)
+            biddersOut = numBidders - biddersInmtx(time - 1);
+            biddersIn = biddersInmtx(time - 1);
+
+            a = 1/3;
+            b = (2/3) * (biddersOut / numBidders);
+            c = (2/3) * (biddersIn / numBidders);
+            if (~isempty(dropOutPrices))
+                if (length(dropOutPrices) >= 3)
+                    avg = dropOutPrices(1, end) + dropOutPrices(1, end - 1) + dropOutPrices(1, end - 2);
+                    avg = avg/3;
+                else
+                    avg = mean(dropOutPrices);
+                end
+            else
+                avg = 0;
+            end
+            P = obj.signal;
+            %* (1 + 0.5*(log(biddersIn) / log(numBidders)));
+
+            [~, l] = size(obj.vals);
+            obj.vals(1, l + 1) = a * obj.vals(1, l) + b * avg + c * P;
+        end
+    end
+end

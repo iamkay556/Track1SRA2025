@@ -1,0 +1,4 @@
+clear; clc; close all;
+
+auction = AuctionClass;
+auction.newAuction()
