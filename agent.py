@@ -3,49 +3,47 @@ import numpy as np
 
 class RationalBidder(ap.Agent):
     def setup(self):
-        # Each agent gets an initial noisy signal about the common value
         self.signal = np.random.normal(self.p.common_value, self.p.signal_std)
         self.valuation_history = [self.signal]
         self.initial_signal = self.signal
 
-    def update_valuation(self, current_price, dropout_prices, remaining_bidders, time_step):
-        """
-        Update valuation using:
-        v_i(t) = a(t) * v_i(t-1) 
-                - (b(t)/k) * sum_n( (1/w(n)) * (v_i(t-1) - d_n) )
-                + c(t) * (r/m) * p(t)
-        """
+    def a_t(self, t):
+        return 0.8 * np.exp(-0.05 * t) + 0.2  # High trust at first, slowly decays
 
+    def w_n(self, n):
+        return n + 1  # Simple linear recency weight (1, 2, 3...)
+
+    def update_valuation(self, current_price, dropout_prices, remaining_bidders, time_step):
         prev_val = self.valuation_history[-1]
-        total_bidders = self.p.n_bidders
-        k = len(dropout_prices)
+        v_i = prev_val
+        m = self.p.n_bidders
         r = remaining_bidders
-        m = total_bidders
+        k = len(dropout_prices)
+        p_t = current_price
         t = time_step
 
-        # Define weight functions for a(t), b(t), c(t)
-        a_t = 0.6  # Trust own opinion
-        b_t = 0.3  # Trust dropout signals
-        c_t = 0.3  # Trust survival signal
+        # --- Dynamic weights ---
+        a = self.a_t(t)
+        delta = 1 - a
+        b = delta * (k / m) if m > 0 else 0
+        c = delta * (r / m) if m > 0 else 0
 
-        # ---- DROP-OUT SIGNAL TERM ----
-        dropout_term = 0
+        # --- Dropout adjustment ---
+        dropout_adjustment = 0
         if k > 0:
             for idx, d_n in enumerate(dropout_prices):
-                w_n = idx + 1  # w(n) = n+1 to avoid divide-by-zero
-                dropout_term += (1 / w_n) * (prev_val - d_n)
-            dropout_term *= (b_t / k)
-        else:
-            dropout_term = 0
+                if v_i > d_n and p_t <= v_i:
+                    weight = 1 / self.w_n(idx)
+                    dropout_adjustment += weight * (v_i - d_n)
+            dropout_adjustment *= (b / k)
 
-        # ---- SURVIVAL SIGNAL TERM ----
-        survival_rate = r / m
-        survival_signal = c_t * survival_rate * current_price
+        # --- Survival signal ---
+        survival_signal = c * p_t
 
-        # ---- FINAL VALUATION ----
-        new_val = a_t * prev_val - dropout_term + survival_signal
+        # --- Final valuation update ---
+        new_val = a * v_i - dropout_adjustment + survival_signal
 
-        # Optional: bounding (same as before)
+        # --- Bounded rationality ---
         max_upward = self.initial_signal + 2 * self.p.signal_std
         max_downward = self.initial_signal - 2 * self.p.signal_std
         new_val = np.clip(new_val, max_downward, max_upward)

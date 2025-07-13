@@ -9,9 +9,9 @@ parameters = {
     'n_bidders': 20,  # Number of bidders
     'common_value': 1000,  # True value of the item
     'signal_std': 150,     # More noise for diverse initial signals
-    'start_price': 600,    # Start closer to true value
+    'start_price': 500,    # Start closer to true value
     'price_increment': 20 # Smaller increments for gradual learning
-    #'steps': 30,           # Sufficient rounds for convergence
+    # 'steps': 30,           # Sufficient rounds for convergence
 }
 
 print("Running English Auction Simulation")
@@ -37,8 +37,26 @@ fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
 
 # Plot 1: Valuation evolution
 for i in range(n_bidders):
-    ax1.plot(valuation_matrix[i], label=f'Bidder {i}', marker='o', markersize=3)
+    values = valuation_matrix[i]
+    
+    # Find the last round before valuation becomes constant
+    dropout_round = n_rounds
+    for t in range(1, n_rounds):
+        if np.isclose(values[t], values[t-1]):
+            # Check if it's flat for more than 2 steps
+            if t + 1 < n_rounds and np.isclose(values[t+1], values[t]):
+                dropout_round = t
+                break
 
+    ax1.plot(
+        range(dropout_round),
+        values[:dropout_round],
+        label=f'Bidder {i}',
+        marker='o',
+        markersize=3
+    )
+
+    
 ax1.axhline(y=parameters['common_value'], color='red', linestyle='--', 
            label=f'True Value (${parameters["common_value"]})', linewidth=2)
 ax1.set_xlabel('Round')
