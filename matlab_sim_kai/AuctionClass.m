@@ -19,6 +19,7 @@ classdef AuctionClass
         biddersIn;      % Matrix/Array; number of bidders still "in"
         dropOutTimes;   % Matrix/Array; times at which bidders drop out
         dropOutPrices;  % Matrix/Array; prices at which bidders drop out
+        signals;        % Matrix/Array; signals of drop-outs
 
         % End Vars
         fprice;         % Int; selling price
@@ -70,7 +71,7 @@ classdef AuctionClass
                 for j = 1:obj.bidderTypes(1, i)
                     switch i
                         case 1
-                            b = BidderClass_Rational();
+                            b = BidderClass();
                             b = b.setID(obj.id, i, j);
                             b = b.newBidder(normrnd(obj.commonVal, obj.rStndDv));
                             obj.bidders{i, j} = b;
@@ -88,7 +89,7 @@ classdef AuctionClass
             disp(["Time: ", num2str(obj.time)])
             disp(["Price: ", num2str(obj.price)])
 
-            while (obj.biddersIn > 1)
+            while (obj.biddersIn > 0)
                 obj = obj.timeStep();
             end
             
@@ -141,13 +142,14 @@ classdef AuctionClass
                         
                         % Update valuation if still in
                         if b.stillIn
-                            b = b.updateVal(obj.time, obj.numBidders, obj.biddersIn, obj.dropOutPrices, obj.price, obj.rStndDv);
+                            b = b.updateVal(obj.signals);
 
                             % Update biddersIn tracker
                             obj.biddersIn(1, obj.time) = obj.biddersIn(1, obj.time) + 1;
                         else
                             obj.dropOutTimes(1, end + 1) = b.dropOutTime;
                             obj.dropOutPrices(1, end + 1) = b.dropOutPrice;
+                            obj.signals(1, end  + 1) = b.signal;
                         end
                         
                     else

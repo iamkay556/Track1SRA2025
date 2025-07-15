@@ -11,24 +11,38 @@ priceIncrement = 20;
 nRational = 20;
 bidderTypes = [nRational];
 
-% New auction object
-auction = AuctionClass;
-auction = auction.setID(1);
-auction = auction.setVars(commonVal, rStndDv, startPrice, priceIncrement);
-auction = auction.setBidders(bidderTypes);
+% Record Selling Price
+spmtx = [];
 
-% Run!
-auction = auction.runSim();
+for i = 1:100
+    % New auction object
+    auction = AuctionClass;
+    auction = auction.setID(1);
+    auction = auction.setVars(commonVal, rStndDv, startPrice, priceIncrement);
+    auction = auction.setBidders(bidderTypes);
+    
+    % Run!
+    auction = auction.runSim();
+    
+    % Update spmtx
+    spmtx(1, end + 1) = auction.fprice;
+end
 
-% Plot valuations
-auction = auction.displayPlots();
+% Display Histogram of average selling price
+disp(["Avg Selling Price: ", num2str(mean(spmtx))]);
+figure;
+histogram(spmtx);
 
+% Plot valuations (single runs)
+%auction = auction.displayPlots();
 
-% bidder valuation update func
-    % change inp in auction class funcs
-    % change inp in bidder parent class func
-    % actually write in rational bidder
 
 % to do: 
-% fix double winner thing
+% Update valuation eq. (back to old)
+% comment code better, start a readme
+% fix double winner thing (random?)
+% fix last dropout extra step by exiting loop when numBidders = 1
+% optimise
+% x on end of graph, add o on end for winner
+% figure out how to run a bunch with diff const
 % credits & readme
