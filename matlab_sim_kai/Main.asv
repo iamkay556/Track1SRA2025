@@ -8,37 +8,41 @@ startPrice = 500;
 priceIncrement = 20;
 
 % Bidders to pass into auction object
-nRational = 20;
-bidderTypes = [nRational];
+nAverage = 0;
+nABG = 20;
+bidderTypes = [nAverage, nABG];
 
 % Record Selling Price
 spmtx = [];
 
-for i = 1:100
+j = 1000;
+for i = 1:j
+    alpha = i*0.01;
+
     % New auction object
     auction = AuctionClass;
     auction = auction.setID(1);
-    auction = auction.setVars(commonVal, rStndDv, startPrice, priceIncrement);
+    auction = auction.setVars(commonVal, rStndDv, startPrice, priceIncrement, alpha);
     auction = auction.setBidders(bidderTypes);
     
     % Run!
     auction = auction.runSim();
     
     % Update spmtx
-    spmtx(1, end + 1) = auction.fprice;
+    spmtx(1, i) = auction.fprice;
 end
 
 % Display Histogram of average selling price
 disp(["Avg Selling Price: ", num2str(mean(spmtx))]);
 figure;
 histogram(spmtx);
+plot((1:100)*(1/j), spmtx);
 
 % Plot valuations (single runs)
 %auction = auction.displayPlots();
 
 
 % to do: 
-% Update valuation eq. (back to old)
 % comment code better, start a readme
 % fix double winner thing (random?)
 % fix last dropout extra step by exiting loop when numBidders = 1

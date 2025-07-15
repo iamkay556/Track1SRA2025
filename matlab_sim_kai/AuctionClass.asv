@@ -130,7 +130,7 @@ classdef AuctionClass
                 for i = 1:m
                     for j = 1:n
                         if (~isempty(obj.bidders{i, j}))
-                            if (obj.bidders{i, j}.dropOutTime == obj.time) && (obj.bidders{i, j}.vals(1, obj.time - 1) > highestval)
+                            if (obj.bidders{i, j}.dropOutTime == obj.time - 1) && (obj.bidders{i, j}.vals(1, obj.time - ) > highestval)
                                 highestval = obj.bidders{i, j}.vals(1, obj.time - 1);
                                 obj.wintype = obj.bidders{i, j}.id(1, 2);
                             end

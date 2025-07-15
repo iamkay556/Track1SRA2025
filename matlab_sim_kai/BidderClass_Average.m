@@ -1,4 +1,4 @@
-classdef BidderClass_Strategic < BidderClass
+classdef BidderClass_Average < BidderClass
 
     methods
         % Update valuation
