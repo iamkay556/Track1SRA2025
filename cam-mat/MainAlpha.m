@@ -12,14 +12,14 @@ nRational = 10;
 bidderTypes = [nRational];
 
 % Run!
-k = 10;    % plot points
-l = 2;      % runs to average
+k = 0.001;   % alpha interval
+l = 20;      % num runs to average
 
-finalVal = zeros(l, k);
+finalVal = zeros(l, 1/k);
 for i = 1:l
-    for j = 1:k
-        disp(['Run: ' num2str( j ) ' / ' num2str( k )]);
-        alpha = j/k;
+    for j = 1:1/k
+        disp(['Run: ' num2str( j * i ) ' / ' num2str( l / k )]);
+        alpha = j * k;
     
         auction = AuctionClass;
         auction = auction.setID(1);
@@ -37,11 +37,11 @@ figure;
 histogram(finalVal);
 
 figure;
-avgVal = zeros(1, k);
-for i = 1:k
+avgVal = zeros(1, 1/k);
+for i = 1:1/k
     avgVal(i) = mean(finalVal(:, i));
 end
 
-a = 1:k;
-a = a/k;
+a = 1:1/k;
+a = a * k;
 plot(a, avgVal);
