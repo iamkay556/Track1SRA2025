@@ -1,0 +1,199 @@
+% Makes a new auction
+classdef AuctionClass
+    properties
+        % General
+        id;             % Int/Array; Unique auction id
+
+        % Unchanging
+        commonVal;      % Int; Arbitrary common value
+        rStndDv;        % Int; Standard deviation of signals from commonVal
+        startPrice;     % Int; Initial price
+        priceIncrement; % Int; Amount to increment price every step
+        numBidders;     % Int; Total number of bidders
+        bidderTypes;    % Matrix/Array; number of each bidder type
+        bidders;        % Matrix/Array; all bidder objects
+        alpha;
+        
+        % Step-dependent 
+        time;           % Int; Simulation current time
+        price;          % Int; current price of object. Increases linearly.
+        biddersIn;      % Matrix/Array; number of bidders still "in"
+        dropOutTimes;   % Matrix/Array; times at which bidders drop out
+        dropOutPrices;  % Matrix/Array; prices at which bidders drop out
+        signalsFound;
+
+        % End Vars
+        fprice;         % Int; selling price
+        wintype;        % Int; winning bidder's type
+    end
+
+
+    methods
+        % Assign ID
+        function obj = setID(obj, id)
+            obj.id = [id];
+        end
+
+
+        % Initialize variables of an auction
+        function obj = setVars(obj, commonVal, rStndDv, startPrice, priceIncrement, alpha)
+            % Initialize constant variables
+            obj.commonVal = commonVal;
+            obj.rStndDv = rStndDv;
+            obj.startPrice = startPrice;
+            obj.priceIncrement = priceIncrement;
+            obj.numBidders = 0;         % Set in setBidders Function
+            obj.alpha = alpha;
+            
+            % Initialize step-dependent variables
+            obj.time = 1;
+            obj.biddersIn(1, 1) = 0;    % Set in setBidders Function
+            obj.price = startPrice;     % Set starting price
+        end
+        
+
+        % Sets up bidders matrix/array
+        function obj = setBidders(obj, bidderTypes)
+            obj.bidderTypes = bidderTypes;  % Records bidder type numbers
+            
+            % Set numBidders and biddersIn
+            numTypes = length(obj.bidderTypes);
+            for i = 1:numTypes
+                obj.numBidders = obj.numBidders + obj.bidderTypes(1, i);
+            end
+            obj.biddersIn(1, 1) = obj.numBidders;
+            
+            % Create a cell array for bidder objects
+            obj.bidders = cell(numTypes, max(obj.bidderTypes));
+
+            % Create bidder objects
+            % Loop through bidderTypes
+            for i = 1:numTypes
+                % Create corresponding bidder objects of type i
+                for j = 1:obj.bidderTypes(1, i)
+                    switch i
+                        case 1
+                            b = BidderClass_Rational();
+                            b = b.setID(obj.id, i, j);
+                            b = b.newBidder(normrnd(obj.commonVal, obj.rStndDv), obj.alpha);
+                            obj.bidders{i, j} = b;
+                        % Add bidder types here once created
+                    end
+                end
+            end
+        end
+
+
+        % Runs a simulation
+        function obj = runSim(obj)
+            % Display starting time and price
+            % % disp(["Time: ", num2str(obj.time)])
+            % % disp(["Price: ", num2str(obj.price)])
+
+            while (obj.biddersIn > 0)
+                obj = obj.timeStep();
+            end
+            
+            
+            disp("Simulation Finished.")
+            
+            % Find winner type
+            [m, n] = size(obj.bidders);
+            for i = 1:m
+                for j = 1:n
+                    if (~isempty(obj.bidders{i, j}))
+                        if (obj.bidders{i, j}.stillIn)
+                            obj.wintype = obj.bidders{i, j}.id(1, 2);
+                        end
+                    else
+                        continue
+                    end
+                end
+            end
+            
+            % Final selling price
+            obj.fprice = obj.price;
+
+            disp(["Winner Type: ", num2str(obj.wintype)])
+            disp(["Selling Price: ", num2str(obj.fprice)])
+
+        end
+
+
+        % Increment time and run time-based actions
+        function obj = timeStep(obj)
+            obj.time = obj.time + 1;
+            obj = obj.increasePrice();       % Increment the current price
+            
+            disp(["Time: ", num2str(obj.time)])
+            disp(["Price: ", num2str(obj.price)])
+            disp(["Bidders In: ", num2str(obj.biddersIn(1, end))])
+            
+            % Drop-outs and valuation changes
+            [m, n] = size(obj.bidders);
+            obj.biddersIn(1, obj.time) = 0;
+            for i = 1:m
+                for j = 1:n
+                    b = obj.bidders{i, j};
+
+                    % Skips empty cells and past drop-outs
+                    if (~isempty(b) & b.stillIn)
+                        
+                        % Update activity status
+                        b = b.isDropping(obj.time, obj.price);
+                        
+                        % Update valuation if still in
+                        if b.stillIn
+                            b = b.updateVal(obj.time, obj.numBidders, obj.biddersIn, obj.dropOutPrices, obj.signalsFound, obj.price, obj.rStndDv, obj.alpha);
+
+                            % Update biddersIn tracker
+                            obj.biddersIn(1, obj.time) = obj.biddersIn(1, obj.time) + 1;
+                        else
+                            obj.dropOutTimes(1, end + 1) = b.dropOutTime;
+                            obj.dropOutPrices(1, end + 1) = b.dropOutPrice;
+                            obj.signalsFound(1, end + 1) = b.signal;
+                        end
+                        
+                    else
+                        continue
+                    end
+
+                    % Add back to bidder
+                    obj.bidders{i, j} = b;
+                end
+            end
+
+        end
+        
+
+        % Increments current price
+        function obj = increasePrice(obj)
+            obj.price = obj.price + obj.priceIncrement;
+        end
+
+
+        % Displays Plots
+        function obj = displayPlots(obj)
+            t = 1:obj.time;
+
+            figure;
+            hold on;
+            
+            % Plot prices over time
+            plot(t, obj.startPrice + (t * obj.priceIncrement));
+            
+            % Plot valuations over time
+            [m, n] = size(obj.bidders);
+            for i = 1:m
+                for j = 1:n
+                    if (~isempty(obj.bidders{i, j}))
+                        y = obj.bidders{i, j}.vals;
+                        plot(y)
+                    end
+                end
+            end
+        end
+
+    end
+
+end
