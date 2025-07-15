@@ -2,7 +2,7 @@ classdef BidderClass_Rational < BidderClass
 
     methods
         % Update valuation
-        function obj = updateVal(obj, time, numBidders, biddersInmtx, dropOutPrices, signalsFound, price, stndDv, alpha)
+        function obj = updateVal(obj, time, numBidders, biddersInmtx, dropOutPrices, price, alpha)
             
             [~, l] = size(obj.vals);
 

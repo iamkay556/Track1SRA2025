@@ -12,13 +12,13 @@ nRational = 10;
 bidderTypes = [nRational];
 
 % Run!
-k = 10;    % plot points
-l = 2;      % runs to average
+k = 100;    % plot points
+l = 3;      % runs to average
 
 finalVal = zeros(l, k);
-for i = 1:l
+for i = 1:1
     for j = 1:k
-        disp(['Run: ' num2str( j ) ' / ' num2str( k )]);
+        disp("Run: ", num2)
         alpha = j/k;
     
         auction = AuctionClass;
@@ -37,8 +37,8 @@ figure;
 histogram(finalVal);
 
 figure;
-avgVal = zeros(1, k);
-for i = 1:k
+avgVal = zeros(l, k);
+for i = 1:i
     avgVal(i) = mean(finalVal(:, i));
 end
 

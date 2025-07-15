@@ -125,9 +125,9 @@ classdef AuctionClass
             obj.time = obj.time + 1;
             obj = obj.increasePrice();       % Increment the current price
             
-            disp(["Time: ", num2str(obj.time)])
-            disp(["Price: ", num2str(obj.price)])
-            disp(["Bidders In: ", num2str(obj.biddersIn(1, end))])
+            % disp(["Time: ", num2str(obj.time)])
+            % disp(["Price: ", num2str(obj.price)])
+            % disp(["Bidders In: ", num2str(obj.biddersIn(1, end))])
             
             % Drop-outs and valuation changes
             [m, n] = size(obj.bidders);
@@ -144,7 +144,7 @@ classdef AuctionClass
                         
                         % Update valuation if still in
                         if b.stillIn
-                            b = b.updateVal(obj.time, obj.numBidders, obj.biddersIn, obj.dropOutPrices, obj.signalsFound, obj.price, obj.rStndDv, obj.alpha);
+                            b = b.updateVal(obj.time, obj.numBidders, obj.biddersIn, obj.dropOutPrices, obj.price, obj.alpha);
 
                             % Update biddersIn tracker
                             obj.biddersIn(1, obj.time) = obj.biddersIn(1, obj.time) + 1;
