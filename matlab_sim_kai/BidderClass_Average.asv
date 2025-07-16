@@ -1,0 +1,32 @@
+classdef BidderClass_Average < BidderClass
+
+    methods
+        % Update valuation
+        function obj = updateVal(obj, dropOutPrices)
+            k = length(dropOutPrices);
+
+            [~, l] = size(obj.vals);
+            
+            avg = obj.vals(1, l);
+            if (k > 0)
+                % Solve for signals
+                x = zeros(1, k);
+                x(1) = dropOutPrices(1);
+                for i = 2:k
+                    x(i) = i * dropOutPrices(i) - (i - 1) * dropOutPrices(i - 1);
+                end
+        
+                avgX = mean(x); % average of inferred signals
+                avg = ((k * avgX) + obj.signal) / (k + 1);
+            end            
+
+            obj.vals(1, l + 1) = avg;
+            
+            if (obj.id(1, 3) == 1)
+                disp(['Signal: ', num2str(obj.signal), ', PrevVal: ', num2str(obj.vals(1, l)), ', Signal Avg: ', num2str(dropOutPrices(1, end)), ', NewVal: ', num2str(obj.vals(1, l + 1))]);
+        
+            end
+
+        end
+    end
+end

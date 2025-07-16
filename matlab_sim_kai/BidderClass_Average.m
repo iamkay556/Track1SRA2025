@@ -6,14 +6,16 @@ classdef BidderClass_Average < BidderClass
             k = length(dropOutPrices);
 
             [~, l] = size(obj.vals);
-
-            if (~isempty(dropOutPrices))
+            
+            % Default is same valuation
+            avg = obj.vals(1, l);
+            if (k > 0)
                 avg = ((k * dropOutPrices(1, end)) + obj.signal) / (k + 1);
-            else
-                avg = obj.vals(1, l);
-            end
-
+            end            
+            
+            % Update
             obj.vals(1, l + 1) = avg;
+
         end
     end
 end

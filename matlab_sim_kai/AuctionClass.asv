@@ -146,8 +146,9 @@ classdef AuctionClass
             % disp(["Price: ", num2str(obj.price)])
             % disp(["Bidders In: ", num2str(obj.biddersIn(1, end))])
             
-            % Drop-outs
+            % Drop-outs and valuation changes
             [m, n] = size(obj.bidders);
+            obj.biddersIn(1, obj.time) = 0;
             for i = 1:m
                 for j = 1:n
                     b = obj.bidders{i, j};
@@ -158,11 +159,23 @@ classdef AuctionClass
                         % Update activity status
                         b = b.isDropping(obj.time, obj.price);
                         
-                        % Update dropOutTimes and dropOutPrices
-                        if ~b.stillIn
+                        % Update valuation if still in
+                        if b.stillIn
+                            if (b.id(1, 2) == 1)
+                                b = b.updateVal(obj.dropOutPrices);
+                            else
+                                b = b.updateVal(obj.time, obj.numBidders, obj.biddersIn, obj.dropOutPrices, obj.price);
+                            end
+
+                            % Update biddersIn tracker
+                            obj.biddersIn(1, obj.time) = obj.biddersIn(1, obj.time) + 1;
+                        else
                             obj.dropOutTimes(1, end + 1) = b.dropOutTime;
                             obj.dropOutPrices(1, end + 1) = b.dropOutPrice;
                         end
+                        
+                    else
+                        continue
                     end
 
                     % Add back to bidder
@@ -170,28 +183,7 @@ classdef AuctionClass
                 end
             end
             
-            % Calculate new valuations
-            obj.biddersIn(1, obj.time) = 0;
-            for i = 1:m
-                for j = 1:n
-                    b = obj.bidders{i, j};
-
-                    % Skips empty cells and all drop-outs
-                    if (~isempty(b) & b.stillIn)
-                        if (b.id(1, 2) == 1)
-                            b = b.updateVal(obj.dropOutPrices);
-                        else
-                            b = b.updateVal(obj.time, obj.numBidders, obj.biddersIn, obj.dropOutPrices, obj.price);
-                        end
-
-                        % Update biddersIn tracker
-                        obj.biddersIn(1, obj.time) = obj.biddersIn(1, obj.time) + 1;
-                    end
-
-                    % Add back to bidder
-                    obj.bidders{i, j} = b;
-                end
-            end
+            
 
         end
         
