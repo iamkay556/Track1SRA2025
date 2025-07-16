@@ -2,12 +2,13 @@ classdef BidderClass_Average < BidderClass
 
     methods
         % Update valuation
-        function obj = updateVal(obj, signals)
+        function obj = updateVal(obj, dropOutPrices)
+            k = length(dropOutPrices);
 
             [~, l] = size(obj.vals);
 
-            if (~isempty(signals))
-                avg = (sum(signals) + obj.signal) / (length(signals) + 1);
+            if (~isempty(dropOutPrices))
+                avg = ((k * dropOutPrices(1, end)) + obj.signal) / (k + 1);
             else
                 avg = obj.vals(1, l);
             end

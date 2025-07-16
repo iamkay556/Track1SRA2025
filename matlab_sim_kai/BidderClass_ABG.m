@@ -1,14 +1,18 @@
 classdef BidderClass_ABG < BidderClass
 
+    properties
+        % alpha;    % Float; initial signal weighting in valuation function
+    end
+
     methods
         % Update valuation
-        function obj = updateVal(obj, time, numBidders, biddersInmtx, dropOutPrices, price, alpha)
+        function obj = updateVal(obj, time, numBidders, biddersInmtx, dropOutPrices, price)
             [~, l] = size(obj.vals);
 
             biddersOut = numBidders - biddersInmtx(time - 1);
             biddersIn = biddersInmtx(time - 1);
 
-            a = alpha;
+            a = obj.alpha;
             b = (1 - a) * (biddersOut / numBidders);
             g = (1 - a) * (biddersIn / numBidders);
 

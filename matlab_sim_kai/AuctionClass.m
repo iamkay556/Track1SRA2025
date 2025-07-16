@@ -12,9 +12,6 @@ classdef AuctionClass
         numBidders;     % Int; Total number of bidders
         bidderTypes;    % Matrix/Array; number of each bidder type
         bidders;        % Matrix/Array; all bidder objects
-
-        % Unchanging Valuation Vars
-        alpha;          % Float; for BidderClass_ABG
         
         % Step-dependent 
         time;           % Int; Simulation current time
@@ -22,7 +19,6 @@ classdef AuctionClass
         biddersIn;      % Matrix/Array; number of bidders still "in"
         dropOutTimes;   % Matrix/Array; times at which bidders drop out
         dropOutPrices;  % Matrix/Array; prices at which bidders drop out
-        signals;        % Matrix/Array; signals of drop-outs
 
         % End Vars
         fprice;         % Int; selling price
@@ -38,16 +34,13 @@ classdef AuctionClass
 
 
         % Initialize variables of an auction
-        function obj = setVars(obj, commonVal, rStndDv, startPrice, priceIncrement, alpha)
+        function obj = setVars(obj, commonVal, rStndDv, startPrice, priceIncrement)
             % Initialize constant variables
             obj.commonVal = commonVal;
             obj.rStndDv = rStndDv;
             obj.startPrice = startPrice;
             obj.priceIncrement = priceIncrement;
             obj.numBidders = 0;         % Set in setBidders Function
-
-            % Initialize constant valuation variables
-            obj.alpha = alpha;
             
             % Initialize step-dependent variables
             obj.time = 1;
@@ -79,7 +72,15 @@ classdef AuctionClass
                         case 1
                             b = BidderClass_Average();
                         case 2
-                            b = BidderClass_ABG();
+                            b = BidderClass_ABG_0();
+                        case 3
+                            b = BidderClass_ABG_03();
+                        case 4
+                            b = BidderClass_ABG_5();
+                        case 5
+                            b = BidderClass_ABG_7();
+                        case 6
+                            b = BidderClass_ABG_1();
                     end
 
                     % Set-Up
@@ -97,52 +98,38 @@ classdef AuctionClass
             % Display starting time and price
             %disp(["Time: ", num2str(obj.time)])
             %disp(["Price: ", num2str(obj.price)])
-
+            
+            % Time Step until 
             while (obj.biddersIn > 0)
                 obj = obj.timeStep();
             end
             
             disp("Simulation Finished.")
             
-            % Find winner type
+            % Find winner type 
+            % In case there are multiple, the first is picked (essentially random)
             [m, n] = size(obj.bidders);
             found = false;
             for i = 1:m
                 for j = 1:n
-                    if (~isempty(obj.bidders{i, j}))
-                        if (obj.bidders{i, j}.stillIn)
-                            obj.wintype = obj.bidders{i, j}.id(1, 2);
-                            found = true;
-                            break;
-                        end
-                    else
-                        continue;
+                    if (~isempty(obj.bidders{i, j}) & obj.bidders{i, j}.dropOutTime == obj.time)
+                        obj.wintype = obj.bidders{i, j}.id(1, 2);
+
+                        found = true;
+                        break;
                     end
                 end
-                if found
+                if (found)
                     break;
                 end
             end
             
-            % If not found, take highest of the last dropped
-            highestval = 0;
-            if (~found)
-                for i = 1:m
-                    for j = 1:n
-                        if (~isempty(obj.bidders{i, j}))
-                            if (obj.bidders{i, j}.dropOutTime == obj.time) && (obj.bidders{i, j}.vals(1, obj.time - 1) > highestval)
-                                highestval = obj.bidders{i, j}.vals(1, obj.time - 1);
-                                obj.wintype = obj.bidders{i, j}.id(1, 2);
-                            end
-                        else
-                            continue
-                        end
-                    end
-                end
+            % Find selling price
+            if (obj.dropOutPrices(1, end) == obj.dropOutPrices(1, end - 1))
+                obj.fprice = obj.price - obj.priceIncrement;
+            else
+                obj.fprice = obj.dropOutPrices(1, end - 1);
             end
-            
-            % Final selling price
-            obj.fprice = obj.price;
 
             disp(["Winner Type: ", num2str(obj.wintype)])
             disp(["Selling Price: ", num2str(obj.fprice)])
@@ -174,11 +161,10 @@ classdef AuctionClass
                         
                         % Update valuation if still in
                         if b.stillIn
-                            switch b.id(1, 2)
-                                case 1
-                                    b = b.updateVal(obj.signals);
-                                case 2
-                                    b = b.updateVal(obj.time, obj.numBidders, obj.biddersIn, obj.dropOutPrices, obj.price, obj.alpha);
+                            if (b.id(1, 2) == 1)
+                                b = b.updateVal(obj.dropOutPrices);
+                            else
+                                b = b.updateVal(obj.time, obj.numBidders, obj.biddersIn, obj.dropOutPrices, obj.price);
                             end
 
                             % Update biddersIn tracker
@@ -186,7 +172,6 @@ classdef AuctionClass
                         else
                             obj.dropOutTimes(1, end + 1) = b.dropOutTime;
                             obj.dropOutPrices(1, end + 1) = b.dropOutPrice;
-                            obj.signals(1, end  + 1) = b.signal;
                         end
                         
                     else

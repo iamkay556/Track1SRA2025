@@ -9,8 +9,12 @@ priceIncrement = 20;
 
 % Bidders to pass into auction object
 nAverage = 0;
-nABG = 20;
-bidderTypes = [nAverage, nABG];
+nABG0 = 0;
+nABG03 = 0;
+nABG05 = 0;
+nABG07 = 0;
+nABG1 = 20;
+bidderTypes = [nAverage, nABG0, nABG03, nABG05, nABG07, nABG1];
 
 % Set runs
 j = 1000;
@@ -22,13 +26,12 @@ spmtx = [1, j];
 for i = 1:j
     alpha = i/j;
     
-    disp("Simulation ------------------------------------")
-    disp(num2str(i))
+    disp(['Simulation ', num2str(i), ' / ', num2str(j), ' -----------------------'])
 
     % New auction object
     auction = AuctionClass;
     auction = auction.setID(i);
-    auction = auction.setVars(commonVal, rStndDv, startPrice, priceIncrement, alpha);
+    auction = auction.setVars(commonVal, rStndDv, startPrice, priceIncrement);
     auction = auction.setBidders(bidderTypes);
 
     % Run!
@@ -39,7 +42,7 @@ for i = 1:j
     spmtx(1, i) = auction.fprice;
 end
 
-disp("Simulations Finished.")
+disp("All Simulations Finished. --------------------")
 disp("Displaying Plots...")
 
 % Display Histogram of average selling price
@@ -53,3 +56,5 @@ for i = 1:j
         auctions{1, i} = auctions{1, i}.displayPlots();
     end
 end
+
+disp("Done.")
