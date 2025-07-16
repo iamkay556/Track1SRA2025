@@ -26,5 +26,5 @@ auction = auction.setBidders(bidderTypes);
 % Run!
 auction = auction.runSim();
 
-% Plot valuations
+% Plot valuations vs time
 auction = auction.displayPlots();
