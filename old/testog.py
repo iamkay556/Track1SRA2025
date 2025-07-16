@@ -7,42 +7,71 @@ import seaborn as sns
 from typing import Dict, List, Tuple
 
 class RationalBidder(ap.Agent):
-    """Rational bidder with a * v0 - b * dropout_term + c * p(t)"""
+    """Rational bidder agent using AgentPy framework with original valuation equation"""
     
     def setup(self):
+        # Core attributes
         self.signal = np.random.normal(self.model.p.common_value, self.model.p.signal_std)
-        self.initial_signal = self.signal
         self.valuation_history = [self.signal]
+        self.initial_signal = self.signal
         self.active = True
         self.dropout_round = None
+        
+    def a_t(self, t):
+        return 0.8 * np.exp(-0.05 * t) + 0.2  # Decaying trust in initial signal
 
     def update_valuation(self, current_price, dropout_prices, remaining_bidders, time_step):
         if not self.active:
+            # Once dropped out, hold valuation constant
             self.valuation_history.append(self.valuation_history[-1])
             return
 
         v_prev = self.valuation_history[-1]
-        v0 = self.initial_signal
-        total = self.model.p.n_bidders
-        dropouts = len(dropout_prices)
+        m = self.model.p.n_bidders
+        r = remaining_bidders
+        k = len(dropout_prices)
+        p_t = current_price
+        t = time_step
 
-        a = self.model.p.a
-        b = (1-a) * (dropouts / total)
-        c = (1-a) * (remaining_bidders / total)
+        # -- Dynamic weights --
+        a = self.a_t(t)
+        delta = 1 - a
+        b = delta * (k / m) if m > 0 else 0
+        c = delta * (r / m) if m > 0 else 0
 
-        # Dropout term
-        dropout_term = 0
-        if dropouts > 0:
-            dropout_term = sum(d for d in dropout_prices) / dropouts
+        # -- Dropout signal: overestimators get penalized
+        dropout_adjustment = 0
+        if k > 0:
+            for d_n in dropout_prices:
+                if v_prev > d_n:
+                    dropout_adjustment += -1.0 * ((v_prev - d_n))
+            dropout_adjustment *= (b / k)
 
-        # Valuation update
-        new_val = a * v0 + b * dropout_term + c * current_price
+        # -- Survival signal: boosts confidence near price
+        proximity = 1 - abs(v_prev - p_t) / v_prev
+        proximity = np.clip(proximity, 0, 1)
+        survival_signal = c * (proximity ** 2) * p_t
 
-        self.valuation_history.append(new_val)
+        # -- Valuation update --
+        v_new = a * v_prev + dropout_adjustment + survival_signal
 
-    def should_dropout(self, price):
-        return self.active and price > self.valuation_history[-1]
+        # -- Bounded rationality --
+        max_val = self.initial_signal + 2 * self.model.p.signal_std
+        min_val = self.initial_signal - 2 * self.model.p.signal_std
+        v_new = np.clip(v_new, min_val, max_val)
 
+        self.valuation_history.append(v_new)
+    
+    def should_dropout(self, current_price: float) -> bool:
+        """Rational dropout decision with small noise"""
+        if not self.active:
+            return False
+            
+        # Add tiny amount of noise to prevent exact ties
+        noise_std = 0.01 * self.model.p.signal_std
+        noisy_threshold = self.valuation_history[-1] + np.random.normal(0, noise_std)
+        
+        return current_price > noisy_threshold
 
 class EnglishAuction(ap.Model):
     """English auction model using AgentPy framework"""
@@ -88,15 +117,13 @@ class EnglishAuction(ap.Model):
         remaining_count = len(self.remaining_ids)
 
         # Update all bidders
-        # Update all bidders using new equation logic
         for bidder in self.bidders:
             bidder.update_valuation(
                 current_price=self.current_price,
                 dropout_prices=self.dropout_prices,
-                remaining_bidders=len(self.remaining_ids),
+                remaining_bidders=remaining_count,
                 time_step=self.round_number
             )
-
 
         # Record history
         self.auction_history.append({
@@ -168,9 +195,8 @@ def run_single_auction(**kwargs) -> EnglishAuction:
         'signal_std': 15,
         'n_bidders': 20,
         'start_price': 20,
-        'price_increment': 1,
-        'steps': 1000,  # Large number to ensure auction completes
-        'a': 1/3  # Default value for a
+        'price_increment': 2,
+        'steps': 1000  # Large number to ensure auction completes
     }
     params.update(kwargs)
     
@@ -180,58 +206,113 @@ def run_single_auction(**kwargs) -> EnglishAuction:
     return model
 
 def plot_rational_bidder_dynamics(model: EnglishAuction, save_path: str = None):
-    """Plot only the bidder valuation trajectories (dropouts + auction price)"""
+    """Plot the valuation dynamics of all rational bidders"""
     
-    plt.figure(figsize=(12, 6))
+    fig, axes = plt.subplots(2, 2, figsize=(16, 12))
+    fig.suptitle(f'Rational Bidders Auction Dynamics (n={model.p.n_bidders})', fontsize=16)
+    
+    # 1. All bidder valuation trajectories
     colors = plt.cm.tab20(np.linspace(0, 1, model.p.n_bidders))
-
+    
     for i, bidder in enumerate(model.bidders):
+        # Plot valuation history up to dropout point
         if bidder.dropout_round is not None:
+            # End at dropout round
             rounds_to_plot = min(bidder.dropout_round, len(bidder.valuation_history))
             x_vals = range(rounds_to_plot)
             y_vals = bidder.valuation_history[:rounds_to_plot]
-            plt.plot(x_vals, y_vals, color=colors[i], alpha=0.7, linewidth=1.5)
+            
+            # Plot line
+            axes[0, 0].plot(x_vals, y_vals, color=colors[i], alpha=0.7, linewidth=1.5)
+            
+            # Mark dropout point
             if rounds_to_plot > 0:
-                plt.scatter(rounds_to_plot-1, y_vals[-1], color=colors[i], s=50, marker='x', alpha=0.8)
+                axes[0, 0].scatter(rounds_to_plot-1, y_vals[-1], color=colors[i], 
+                                 s=50, marker='x', alpha=0.8)
         else:
+            # Winner - plot full history
             x_vals = range(len(bidder.valuation_history))
             y_vals = bidder.valuation_history
-            plt.plot(x_vals, y_vals, color=colors[i], alpha=0.9, linewidth=3, label=f'Winner (Bidder {i+1})')
+            axes[0, 0].plot(x_vals, y_vals, color=colors[i], alpha=0.9, 
+                          linewidth=3, label=f'Winner (Bidder {i+1})')
+            
+            # Mark final point
             if len(y_vals) > 0:
-                plt.scatter(len(y_vals)-1, y_vals[-1], color=colors[i], s=100, marker='o', alpha=1.0)
-
-    # Add auction price line
-    plt.plot(range(len(model.price_history)), model.price_history, color='black', linestyle='--', linewidth=2, label='Auction Price')
-
-    # Add reference line
-    plt.axhline(model.p.common_value, color='red', linestyle='--', linewidth=2, label='True Common Value')
-
-    plt.title("Bidder Valuation Trajectories (Dropouts & Auction Price)")
-    plt.xlabel("Round")
-    plt.ylabel("Valuation")
-    plt.grid(True, alpha=0.3)
-    plt.legend()
+                axes[0, 0].scatter(len(y_vals)-1, y_vals[-1], color=colors[i], 
+                                 s=100, marker='o', alpha=1.0)
+    
+    # Add reference lines
+    axes[0, 0].axhline(model.p.common_value, color='red', linestyle='--', 
+                       linewidth=2, label='True Common Value')
+    axes[0, 0].set_xlabel('Round')
+    axes[0, 0].set_ylabel('Valuation')
+    axes[0, 0].set_title('Bidder Valuation Trajectories')
+    axes[0, 0].legend()
+    axes[0, 0].grid(True, alpha=0.3)
+    
+    # 2. Price evolution and active bidders
+    price_rounds = range(len(model.price_history))
+    axes[0, 1].plot(price_rounds, model.price_history, 'b-o', linewidth=2, 
+                   markersize=4, label='Auction Price')
+    axes[0, 1].axhline(model.p.common_value, color='red', linestyle='--', 
+                       linewidth=2, label='True Common Value')
+    axes[0, 1].set_xlabel('Round')
+    axes[0, 1].set_ylabel('Price')
+    axes[0, 1].set_title('Price Evolution')
+    axes[0, 1].legend()
+    axes[0, 1].grid(True, alpha=0.3)
+    
+    # 3. Active bidders over time
+    active_rounds = range(len(model.active_bidders_history))
+    axes[1, 0].plot(active_rounds, model.active_bidders_history, 'g-o', 
+                   linewidth=2, markersize=4)
+    axes[1, 0].set_xlabel('Round')
+    axes[1, 0].set_ylabel('Active Bidders')
+    axes[1, 0].set_title('Active Bidders Over Time')
+    axes[1, 0].grid(True, alpha=0.3)
+    
+    # 4. Dropout analysis
+    dropouts = model.get_dropout_info()
+    if dropouts:
+        dropout_rounds = [d['round'] for d in dropouts]
+        dropout_prices = [d['price'] for d in dropouts if d['price'] is not None]
+        dropout_valuations = [d['valuation'] for d in dropouts]
+        initial_signals = [d['initial_signal'] for d in dropouts]
+        
+        # Plot dropout points
+        if dropout_prices:
+            axes[1, 1].scatter(dropout_rounds[:len(dropout_prices)], dropout_prices, c='red', 
+                              alpha=0.7, s=50, label='Dropout Price')
+        axes[1, 1].scatter(dropout_rounds, dropout_valuations, c='blue', 
+                          alpha=0.7, s=50, label='Final Valuation')
+        axes[1, 1].scatter(dropout_rounds, initial_signals, c='green', 
+                          alpha=0.7, s=50, label='Initial Signal')
+        
+        axes[1, 1].axhline(model.p.common_value, color='red', linestyle='--', 
+                          linewidth=2, label='True Common Value')
+        axes[1, 1].set_xlabel('Dropout Round')
+        axes[1, 1].set_ylabel('Value')
+        axes[1, 1].set_title('Dropout Analysis')
+        axes[1, 1].legend()
+        axes[1, 1].grid(True, alpha=0.3)
+    
     plt.tight_layout()
-
+    
     if save_path:
         plt.savefig(save_path, dpi=300, bbox_inches='tight')
     
     plt.show()
-
 
 def analyze_rational_auction(model: EnglishAuction):
     """Analyze the results of a rational bidder auction"""
     
     print("=== RATIONAL BIDDER AUCTION ANALYSIS ===")
     print(f"Common Value: ${model.p.common_value:.2f}")
-    if model.final_price is not None:
-        print(f"Final Price: ${model.final_price:.2f}")
-        print(f"Price Deviation: ${model.final_price - model.p.common_value:.2f}")
-        print(f"Efficiency: {model.final_price / model.p.common_value:.3f}")
-    else:
-        print("Final Price: None (no winner)")
-        print("Price Deviation: N/A")
-        print("Efficiency: N/A")
+    print(f"Final Price: ${model.final_price:.2f}")
+    print(f"Price Deviation: ${model.final_price - model.p.common_value:.2f}")
+    print(f"Efficiency: {model.final_price / model.p.common_value:.3f}")
+    print(f"Total Rounds: {model.round_number}")
+    print(f"Total Dropouts: {len(model.dropout_prices)}")
     
     if model.winner:
         print(f"\nWINNER ANALYSIS:")
@@ -279,39 +360,31 @@ def run_multiple_rational_auctions(num_auctions: int = 10, **kwargs):
         print(f"\nRunning auction {i+1}/{num_auctions}...")
         model = run_single_auction(**kwargs)
         
-        eff = model.final_price / model.p.common_value if model.final_price is not None else None
-        dev = model.final_price - model.p.common_value if model.final_price is not None else None
-
         result = {
             'auction': i+1,
             'final_price': model.final_price,
             'common_value': model.p.common_value,
             'rounds': model.round_number,
-            'efficiency': eff,
-            'price_deviation': dev,
+            'efficiency': model.final_price / model.p.common_value,
+            'price_deviation': model.final_price - model.p.common_value,
             'winner_signal': model.winner.initial_signal if model.winner else None,
             'winner_valuation': model.winner.valuation_history[-1] if model.winner else None
         }
-
         results.append(result)
         
         # Show single auction dynamics for first few auctions
-        if True:
+        if i < 3:
             plot_rational_bidder_dynamics(model)
             analyze_rational_auction(model)
     
+    # Summary analysis
     df = pd.DataFrame(results)
-
-    # Filter out None values to avoid error in mean/std
-    valid_df = df[df['efficiency'].notna()]
-
     print("\n=== SUMMARY ACROSS ALL AUCTIONS ===")
-    print(f"Mean Final Price: ${valid_df['final_price'].mean():.2f} ± ${valid_df['final_price'].std():.2f}")
-    print(f"Mean Common Value: ${valid_df['common_value'].mean():.2f}")
-    print(f"Mean Efficiency: {valid_df['efficiency'].mean():.3f} ± {valid_df['efficiency'].std():.3f}")
-    print(f"Mean Price Deviation: ${valid_df['price_deviation'].mean():.2f} ± {valid_df['price_deviation'].std():.2f}")
-    print(f"Mean Rounds: {valid_df['rounds'].mean():.1f} ± {valid_df['rounds'].std():.1f}")
-
+    print(f"Mean Final Price: ${df['final_price'].mean():.2f} ± ${df['final_price'].std():.2f}")
+    print(f"Mean Common Value: ${df['common_value'].mean():.2f}")
+    print(f"Mean Efficiency: {df['efficiency'].mean():.3f} ± {df['efficiency'].std():.3f}")
+    print(f"Mean Price Deviation: ${df['price_deviation'].mean():.2f} ± {df['price_deviation'].std():.2f}")
+    print(f"Mean Rounds: {df['rounds'].mean():.1f} ± {df['rounds'].std():.1f}")
     
     return df
 
@@ -326,8 +399,7 @@ if __name__ == "__main__":
         signal_std=15,
         n_bidders=20,
         start_price=20,
-        price_increment=1,
-        a=1/3
+        price_increment=2
     )
     
     # Analyze and visualize
@@ -344,42 +416,7 @@ if __name__ == "__main__":
         signal_std=150,
         n_bidders=20,
         start_price=600,
-        price_increment=1
+        price_increment=20
     )
     
     print("\nAll auctions completed!")
-
-        # === NEW: Sweep a from 0 to 1 and plot final price ===
-    print("\n" + "="*50)
-    print("SWEEPING a FROM 0 TO 1...")
-
-    a_values = np.arange(0.0, 1.01, 0.001)
-    final_prices = []
-
-    for a_val in a_values:
-        print(f"Running auction with a = {a_val:.2f}")
-        model = run_single_auction(
-            common_value=1000,
-            signal_std=150,
-            n_bidders=20,
-            start_price=600,
-            price_increment=1,
-            a=a_val
-        )
-        final_prices.append(model.final_price if model.final_price is not None else np.nan)
-
-    # Plot results
-    # Plot results — improved height and line clarity
-    plt.figure(figsize=(12, 8))  # Wider and taller
-    plt.plot(a_values, final_prices, linestyle='-', linewidth=2, color='blue', label='Final Price')
-    plt.scatter(a_values, final_prices, color='blue', s=10)  # Small dots to show individual data points
-    plt.axhline(1000, color='red', linestyle='--', linewidth=2, label='True Common Value')
-
-    plt.title("Final Auction Price vs a (Weight on Initial Signal)", fontsize=16)
-    plt.xlabel("a (Weight on Initial Signal)", fontsize=12)
-    plt.ylabel("Final Auction Price", fontsize=12)
-    plt.grid(True, alpha=0.3)
-    plt.legend()
-    plt.tight_layout()
-    plt.show()
-

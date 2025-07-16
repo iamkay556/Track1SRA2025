@@ -2,7 +2,7 @@ import agentpy as ap
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from model import EnglishAuctionModel
+from old.model import EnglishAuctionModel
 
 # Parameters for the auction
 parameters = {

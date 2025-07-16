@@ -1,6 +1,6 @@
 import agentpy as ap
 import numpy as np
-from agent import RationalBidder
+from old.agent import RationalBidder
 
 class EnglishAuctionModel(ap.Model):
     def setup(self):
