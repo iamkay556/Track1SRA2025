@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auction Simulation Research Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #2d3748;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        .controls-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .control-group {
+            background: #f8fafc;
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .control-group:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .control-group h3 {
+            color: #2d3748;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .control-group h3::before {
+            content: "⚙️";
+            font-size: 1.2rem;
+        }
+
+        .bidder-controls h3::before {
+            content: "👥";
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        label {
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 0.9rem;
+        }
+
+        input[type="number"], input[type="range"] {
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="number"]:focus, input[type="range"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            padding: 0;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #667eea;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #667eea;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+
+        .bidder-type {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #e2e8f0;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .bidder-type:hover {
+            border-color: #667eea;
+        }
+
+        .bidder-type h4 {
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #718096;
+            color: white;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #4a5568;
+        }
+
+        .btn-danger {
+            background: #e53e3e;
+            color: white;
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            background: #c53030;
+        }
+
+        .btn-success {
+            background: #38a169;
+            color: white;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            background: #2f855a;
+        }
+
+        .status-section {
+            background: #f8fafc;
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid #e2e8f0;
+            margin-bottom: 30px;
+        }
+
+        .status-section h3 {
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .status-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px solid #e2e8f0;
+        }
+
+        .status-label {
+            font-size: 0.9rem;
+            color: #718096;
+            margin-bottom: 5px;
+        }
+
+        .status-value {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        .plots-section {
+            margin-top: 30px;
+        }
+
+        .plot-container {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid #e2e8f0;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .plot-container h3 {
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .plot-container img {
+            max-width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+            font-size: 1.1rem;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .loading::after {
+            content: "";
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            margin-left: 10px;
+            border: 3px solid #667eea;
+            border-top: 3px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .range-value {
+            font-size: 0.9rem;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .export-section {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background: #48bb78;
+            color: white;
+            border-radius: 10px;
+            font-weight: 600;
+            display: none;
+            z-index: 1000;
+        }
+
+        .toast.error {
+            background: #e53e3e;
+        }
+
+        .toast.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .controls-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏛️ Auction Simulation Research Tool</h1>
+        
+        <div class="controls-section">
+            <div class="control-group">
+                <h3>Auction Parameters</h3>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="common_value">Common Value</label>
+                        <input type="number" id="common_value" value="1000" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="signal_std">Signal Standard Deviation</label>
+                        <input type="number" id="signal_std" value="150" min="1">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="start_price">Starting Price</label>
+                        <input type="number" id="start_price" value="500" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="price_increment">Price Increment</label>
+                        <input type="number" id="price_increment" value="20" min="1">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="max_steps">Maximum Steps</label>
+                    <input type="number" id="max_steps" value="1000" min="10">
+                </div>
+            </div>
+            
+            <div class="control-group bidder-controls">
+                <h3>Bidder Configuration</h3>
+                
+                <div class="bidder-type">
+                    <h4>Strategic Bidders</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="strategic_count">Count</label>
+                            <input type="number" id="strategic_count" value="15" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="strategic_a">A Value: <span class="range-value" id="strategic_a_value">0.33</span></label>
+                            <input type="range" id="strategic_a" min="0" max="1" step="0.01" value="0.33">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bidder-type">
+                    <h4>Naive Bidders</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="naive_count">Count</label>
+                            <input type="number" id="naive_count" value="3" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="naive_a">A Value: <span class="range-value" id="naive_a_value">1.00</span></label>
+                            <input type="range" id="naive_a" min="0" max="1" step="0.01" value="1.00">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bidder-type">
+                    <h4>Overconfident Bidders</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="overconfident_count">Count</label>
+                            <input type="number" id="overconfident_count" value="2" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="overconfident_a">A Value: <span class="range-value" id="overconfident_a_value">0.80</span></label>
+                            <input type="range" id="overconfident_a" min="0" max="1" step="0.01" value="0.80">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="action-buttons">
+            <button class="btn-primary" id="start_btn">Start Simulation</button>
+            <button class="btn-secondary" id="reset_btn">Reset</button>
+            <button class="btn-success hidden" id="export_btn">Export Data</button>
+        </div>
+        
+        <div class="status-section">
+            <h3>📊 Simulation Status</h3>
+            <div class="status-grid">
+                <div class="status-item">
+                    <div class="status-label">Status</div>
+                    <div class="status-value" id="status_value">Ready</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">Current Round</div>
+                    <div class="status-value" id="round_value">-</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">Current Price</div>
+                    <div class="status-value" id="price_value">-</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">Active Bidders</div>
+                    <div class="status-value" id="bidders_value">-</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">Winner Type</div>
+                    <div class="status-value" id="winner_value">-</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="loading" id="loading">
+            Running simulation...
+        </div>
+        
+        <div class="plots-section" id="plots_section">
+            <div class="plot-container">
+                <h3>📈 Bidder Dynamics</h3>
+                <img id="dynamics_plot" src="" alt="Bidder dynamics will appear here after simulation" style="display: none;">
+                <div id="dynamics_placeholder">Run a simulation to see bidder valuation trajectories</div>
+            </div>
+            
+            <div class="plot-container">
+                <h3>📊 Summary Statistics</h3>
+                <img id="summary_plot" src="" alt="Summary statistics will appear here after simulation" style="display: none;">
+                <div id="summary_placeholder">Run a simulation to see summary statistics</div>
+            </div>
+        </div>
+        
+        <div class="export-section">
+            <p><em>💡 Tip: Adjust the 'A Value' sliders to control how much bidders weight their initial signals vs. market information. Lower values make bidders more responsive to market signals.</em></p>
+        </div>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // Global variables
+        let simulationRunning = false;
+        let statusCheckInterval = null;
+
+        // Initialize range value displays
+        function initializeRangeDisplays() {
+            const ranges = [
+                { id: 'strategic_a', displayId: 'strategic_a_value' },
+                { id: 'naive_a', displayId: 'naive_a_value' },
+                { id: 'overconfident_a', displayId: 'overconfident_a_value' }
+            ];
+
+            ranges.forEach(range => {
+                const input = document.getElementById(range.id);
+                const display = document.getElementById(range.displayId);
+                
+                input.addEventListener('input', function() {
+                    display.textContent = parseFloat(this.value).toFixed(2);
+                });
+            });
+        }
+
+        // Show toast notification
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = isError ? 'toast error show' : 'toast show';
+            setTimeout(() => {
+                toast.className = 'toast';
+            }, 3000);
+        }
+
+        // Update simulation status
+        function updateStatus() {
+            fetch('/api/simulation_status')
+                .then(response => response.json())
+                .then(data => {
+                    const statusEl = document.getElementById('status_value');
+                    const roundEl = document.getElementById('round_value');
+                    const priceEl = document.getElementById('price_value');
+                    const biddersEl = document.getElementById('bidders_value');
+                    const winnerEl = document.getElementById('winner_value');
+
+                    if (data.status === 'not_started') {
+                        statusEl.textContent = 'Ready';
+                        roundEl.textContent = '-';
+                        priceEl.textContent = '-';
+                        biddersEl.textContent = '-';
+                        winnerEl.textContent = '-';
+                    } else if (data.status === 'running') {
+                        statusEl.textContent = 'Running';
+                        roundEl.textContent = data.current_round;
+                        priceEl.textContent = '$' + data.current_price;
+                        biddersEl.textContent = data.active_bidders;
+                        winnerEl.textContent = '-';
+                    } else if (data.status === 'completed') {
+                        statusEl.textContent = 'Completed';
+                        roundEl.textContent = data.total_rounds;
+                        priceEl.textContent = '$' + data.final_price;
+                        biddersEl.textContent = '1';
+                        winnerEl.textContent = data.winner_type || 'Unknown';
+                        
+                        // Show plots and enable export
+                        loadPlots();
+                        document.getElementById('export_btn').classList.remove('hidden');
+                        
+                        // Stop status checking
+                        if (statusCheckInterval) {
+                            clearInterval(statusCheckInterval);
+                            statusCheckInterval = null;
+                        }
+                        
+                        // Update UI
+                        simulationRunning = false;
+                        document.getElementById('start_btn').disabled = false;
+                        document.getElementById('loading').classList.remove('show');
+                        
+                        showToast('Simulation completed successfully!');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking status:', error);
+                });
+        }
+
+        // Load and display plots
+        function loadPlots() {
+            fetch('/api/get_plots')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.dynamics_plot) {
+                        const dynamicsImg = document.getElementById('dynamics_plot');
+                        const dynamicsPlaceholder = document.getElementById('dynamics_placeholder');
+                        
+                        dynamicsImg.src = 'data:image/png;base64,' + data.dynamics_plot;
+                        dynamicsImg.style.display = 'block';
+                        dynamicsPlaceholder.style.display = 'none';
+                    }
+                    
+                    if (data.summary_plot) {
+                        const summaryImg = document.getElementById('summary_plot');
+                        const summaryPlaceholder = document.getElementById('summary_placeholder');
+                        
+                        summaryImg.src = 'data:image/png;base64,' + data.summary_plot;
+                        summaryImg.style.display = 'block';
+                        summaryPlaceholder.style.display = 'none';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading plots:', error);
+                    showToast('Error loading plots', true);
+                });
+        }
+
+        // Start simulation
+        function startSimulation() {
+            if (simulationRunning) return;
+
+            // Get form values
+            const params = {
+                common_value: parseInt(document.getElementById('common_value').value),
+                signal_std: parseInt(document.getElementById('signal_std').value),
+                start_price: parseInt(document.getElementById('start_price').value),
+                price_increment: parseInt(document.getElementById('price_increment').value),
+                max_steps: parseInt(document.getElementById('max_steps').value),
+                strategic_count: parseInt(document.getElementById('strategic_count').value),
+                strategic_a: parseFloat(document.getElementById('strategic_a').value),
+                naive_count: parseInt(document.getElementById('naive_count').value),
+                naive_a: parseFloat(document.getElementById('naive_a').value),
+                overconfident_count: parseInt(document.getElementById('overconfident_count').value),
+                overconfident_a: parseFloat(document.getElementById('overconfident_a').value)
+            };
+
+            // Validate total bidders
+            const totalBidders = params.strategic_count + params.naive_count + params.overconfident_count;
+            if (totalBidders === 0) {
+                showToast('Please add at least one bidder', true);
+                return;
+            }
+
+            // Update UI
+            simulationRunning = true;
+            document.getElementById('start_btn').disabled = true;
+            document.getElementById('loading').classList.add('show');
+            document.getElementById('export_btn').classList.add('hidden');
+
+            // Start simulation
+            fetch('/api/start_simulation', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(params)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'started') {
+                    showToast('Simulation started!');
+                    // Start status checking
+                    statusCheckInterval = setInterval(updateStatus, 500);
+                } else {
+                    showToast('Error starting simulation', true);
+                    simulationRunning = false;
+                    document.getElementById('start_btn').disabled = false;
+                    document.getElementById('loading').classList.remove('show');
+                }
+            })
+            .catch(error => {
+                console.error('Error starting simulation:', error);
+                showToast('Error starting simulation', true);
+                simulationRunning = false;
+                document.getElementById('start_btn').disabled = false;
+                document.getElementById('loading').classList.remove('show');
+            });
+        }
+
+        // Reset simulation
+        function resetSimulation() {
+            if (statusCheckInterval) {
+                clearInterval(statusCheckInterval);
+                statusCheckInterval = null;
+            }
+
+            fetch('/api/reset')
+                .then(response => response.json())
+                .then(data => {
+                    // Reset UI
+                    simulationRunning = false;
+                    document.getElementById('start_btn').disabled = false;
+                    document.getElementById('loading').classList.remove('show');
+                    document.getElementById('export_btn').classList.add('hidden');
+                    
+                    // Reset status
+                    document.getElementById('status_value').textContent = 'Ready';
+                    document.getElementById('round_value').textContent = '-';
+                    document.getElementById('price_value').textContent = '-';
+                    document.getElementById('bidders_value').textContent = '-';
+                    document.getElementById('winner_value').textContent = '-';
+                    
+                    // Reset plots
+                    document.getElementById('dynamics_plot').style.display = 'none';
+                    document.getElementById('dynamics_placeholder').style.display = 'block';
+                    document.getElementById('summary_plot').style.display = 'none';
+                    document.getElementById('summary_placeholder').style.display = 'block';
+                    
+                    showToast('Simulation reset');
+                })
+                .catch(error => {
+                    console.error('Error resetting simulation:', error);
+                    showToast('Error resetting simulation', true);
+                });
+        }
+
+        // Export data
+        function exportData() {
+            fetch('/api/export_data')
+                .then(response => response.json())
+                .then(data => {
+                    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'auction_simulation_data.json';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    showToast('Data exported successfully!');
+                })
+                .catch(error => {
+                    console.error('Error exporting data:', error);
+                    showToast('Error exporting data', true);
+                });
+        }
+
+        // Initialize everything when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeRangeDisplays();
+            
+            // Bind event listeners
+            document.getElementById('start_btn').addEventListener('click', startSimulation);
+            document.getElementById('reset_btn').addEventListener('click', resetSimulation);
+            document.getElementById('export_btn').addEventListener('click', exportData);
+            
+            // Initial status check
+            updateStatus();
+        });
+    </script>
+</body>
+</html>
