@@ -6,7 +6,6 @@ classdef BidderClass
 
         % Unchanging
         signal          % Int; Original valuation
-        alpha
         
         % Changing
         vals            % Matrix/Array; valuations over time
@@ -23,10 +22,9 @@ classdef BidderClass
 
 
         % Initialize variables of the bidder
-        function obj = newBidder(obj, signal, alpha)
+        function obj = newBidder(obj, signal)
             % Initialize constant variables
             obj.signal = signal;
-            obj.alpha = alpha;
             
             % Initialize step-dependent variables
             obj.vals(1, 1) = signal;
@@ -47,7 +45,7 @@ classdef BidderClass
 
 
         % Update valuation
-        function obj = updateVal(obj) 
+        function obj = updateVal(obj)
             % [ change valuation here ]
         end
 

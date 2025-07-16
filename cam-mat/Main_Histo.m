@@ -1,5 +1,5 @@
 % Matlab English Auction Simulation
-clear; clc; close all;
+clear; clc; %close all;
 
 % Values to pass into auction object
 commonVal = 1000;
@@ -19,11 +19,11 @@ bidderTypes = [nRational];
 
 % Run!
 % % auction = auction.runSim();
-finalVal = zeros(1, 10000);
+finalVal = zeros(1, 100);
 for i = 1:length(finalVal)
     auction = AuctionClass;
     auction = auction.setID(1);
-    auction = auction.setVars(commonVal, rStndDv, startPrice, priceIncrement);
+    auction = auction.setVars(commonVal, rStndDv, startPrice, priceIncrement, 1/3);
     auction = auction.setBidders(bidderTypes);
     auction = auction.runSim();
     finalVal(i) = auction.fprice;
@@ -31,7 +31,15 @@ end
 
 % Plot valuations
 % auction = auction.displayPlots();
-histogram(finalVal)
+figure;
+histogram(finalVal);
+
+meanVal = mean(finalVal)
+
+xline(meanVal, '--b', 'LineWidth', 2);
+
+text(meanVal, max(ylim)*0.9, sprintf('Mean = %.2f', meanVal), ...
+     'Color', 'b', 'HorizontalAlignment', 'left', 'FontSize', 10);
 
 % bidder valuation update func
     % change inp in auction class funcs
