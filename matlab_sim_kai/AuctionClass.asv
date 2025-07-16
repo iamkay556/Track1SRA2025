@@ -98,6 +98,11 @@ classdef AuctionClass
             % Display starting time and price
             %disp(["Time: ", num2str(obj.time)])
             %disp(["Price: ", num2str(obj.price)])
+
+            if (obj.numBidders < 2)
+                disp("Add more bidders.")
+                return
+            end
             
             % Time Step until 
             while (obj.biddersIn > 0)
@@ -146,9 +151,8 @@ classdef AuctionClass
             % disp(["Price: ", num2str(obj.price)])
             % disp(["Bidders In: ", num2str(obj.biddersIn(1, end))])
             
-            % Drop-outs and valuation changes
+            % Drop-outs
             [m, n] = size(obj.bidders);
-            obj.biddersIn(1, obj.time) = 0;
             for i = 1:m
                 for j = 1:n
                     b = obj.bidders{i, j};
@@ -159,23 +163,11 @@ classdef AuctionClass
                         % Update activity status
                         b = b.isDropping(obj.time, obj.price);
                         
-                        % Update valuation if still in
-                        if b.stillIn
-                            if (b.id(1, 2) == 1)
-                                b = b.updateVal(obj.dropOutPrices);
-                            else
-                                b = b.updateVal(obj.time, obj.numBidders, obj.biddersIn, obj.dropOutPrices, obj.price);
-                            end
-
-                            % Update biddersIn tracker
-                            obj.biddersIn(1, obj.time) = obj.biddersIn(1, obj.time) + 1;
-                        else
+                        % Update dropOutTimes and dropOutPrices
+                        if ~b.stillIn
                             obj.dropOutTimes(1, end + 1) = b.dropOutTime;
                             obj.dropOutPrices(1, end + 1) = b.dropOutPrice;
                         end
-                        
-                    else
-                        continue
                     end
 
                     % Add back to bidder
@@ -183,7 +175,28 @@ classdef AuctionClass
                 end
             end
             
-            
+            % Calculate new valuations
+            obj.biddersIn(1, obj.time) = 0;
+            for i = 1:m
+                for j = 1:n
+                    b = obj.bidders{i, j};
+
+                    % Skips empty cells and all drop-outs
+                    if (~isempty(b) & b.stillIn)
+                        if (b.id(1, 2) == 1)
+                            b = b.updateVal(obj.dropOutPrices);
+                        else
+                            b = b.updateVal(obj.time, obj.numBidders, obj.biddersIn, obj.dropOutPrices, obj.price);
+                        end
+
+                        % Update biddersIn tracker
+                        obj.biddersIn(1, obj.time) = obj.biddersIn(1, obj.time) + 1;
+                    end
+
+                    % Add back to bidder
+                    obj.bidders{i, j} = b;
+                end
+            end
 
         end
         
@@ -196,6 +209,10 @@ classdef AuctionClass
 
         % Displays Plots
         function obj = displayPlots(obj)
+            if (obj.numBidders < 2)
+                return
+            end
+
             t = 1:obj.time;
 
             figure;

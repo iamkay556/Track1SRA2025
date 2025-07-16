@@ -1,0 +1,96 @@
+% Matlab English Auction Simulation
+clear; clc; close all;
+
+% Values to pass into auction obrunsect
+commonVal = 1000;
+rStndDv = 150;
+startPrice = 500;
+priceIncrement = 20;
+
+% Set runs
+runs = 100;
+
+% Get all combinations and save in mtx
+total = 20;
+mtx = [];
+for a = 0:(total)
+    for b = 0:(total - a)
+        for c = 0:(total - a - b)
+            for d = 0:(total - a - b - c)
+                for e = 0:(total - a - b - c - d)
+                    if (a + b + c + d + e == 20)
+                        mtx(:, end + 1) = [a, b, c, d, e];
+                    end
+                     
+                end
+            end
+        end
+    end
+end
+
+% Get mtx size
+[~, combs] = size(mtx);
+
+% Data pre-allocation
+aucData = {};       % Rows are [a, b, c, d, e], selling price, and winner type count
+
+% Set a timer
+tic;
+
+% Data Collection!
+for i = 1:combs
+    % Pre-allocate data for this combination
+    sellingPrices = zeros(1, runs);
+    winTypeCount = zeros(1, 5);
+    
+    % Start runs for combination
+    for k = 1:runs
+        disp(['Simulation ', num2str(k + (i - 1) * runs), ' / ', num2str(combs * runs), ' -----------------------'])
+
+        % Bidders to pass into auction obrunsect
+        nAverage = 0;
+        nABG0 = mtx(1, i);
+        nABG03 = mtx(2, i);
+        nABG05 = mtx(3, i);
+        nABG07 = mtx(4, i);
+        nABG1 = mtx(5, i);
+        bidderTypes = [nAverage, nABG0, nABG03, nABG05, nABG07, nABG1];
+    
+        % New auction obrunsect
+        auction = AuctionClass;
+        auction = auction.setID(i * k);
+        auction = auction.setVars(commonVal, rStndDv, startPrice, priceIncrement);
+        auction = auction.setBidders(bidderTypes);
+    
+        % Run!
+        auction = auction.runSim();
+        
+        % Save data from this run
+        sellingPrice(1, k) = auction.fprice;
+        winTypeCount(1, auction.wintype - 1) = winTypeCount(1, auction.wintype - 1) + 1;
+
+        % Runtime
+        elapsedTime = toc;
+        disp(['Elapsed time: ', num2str(elapsedTime), ' seconds']);
+    end
+
+    % Average sellingPrice
+    avgfprice = mean(sellingPrice);
+
+    % Update data
+    aucData(:, i) = {[nABG0, nABG03, nABG05, nABG07, nABG1], avgfprice, winTypeCount};
+end
+
+disp("All Simulations Finished. --------------------")
+
+elapsedTime = toc;
+disp(['Elapsed time: ', num2str(elapsedTime), ' seconds']);
+
+disp("Saving...")
+save;
+
+%disp("Displaying Plots...")
+
+% Plots
+
+disp("Done.")

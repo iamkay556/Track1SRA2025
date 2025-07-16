@@ -76,9 +76,9 @@ classdef AuctionClass
                         case 3
                             b = BidderClass_ABG_03();
                         case 4
-                            b = BidderClass_ABG_5();
+                            b = BidderClass_ABG_05();
                         case 5
-                            b = BidderClass_ABG_7();
+                            b = BidderClass_ABG_07();
                         case 6
                             b = BidderClass_ABG_1();
                     end
@@ -98,6 +98,11 @@ classdef AuctionClass
             % Display starting time and price
             %disp(["Time: ", num2str(obj.time)])
             %disp(["Price: ", num2str(obj.price)])
+
+            if (obj.numBidders < 2)
+                disp("Number of bidders must be at least 2.")
+                return
+            end
             
             % Time Step until 
             while (obj.biddersIn > 0)
@@ -204,6 +209,10 @@ classdef AuctionClass
 
         % Displays Plots
         function obj = displayPlots(obj)
+            if (obj.numBidders < 2)
+                return
+            end
+
             t = 1:obj.time;
 
             figure;
