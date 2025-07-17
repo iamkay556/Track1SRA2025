@@ -86,11 +86,8 @@ disp("All Simulations Finished. --------------------")
 elapsedTime = toc;
 disp(['Elapsed time: ', num2str(elapsedTime), ' seconds']);
 
-disp("Saving...")
+disp("Saving Data...")
 save;
-
-%disp("Displaying Plots...")
-
-% Plots
+disp("Saved.")
 
 disp("Done.")
