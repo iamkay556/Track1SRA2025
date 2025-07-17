@@ -1,0 +1,48 @@
+clear; clc; close all;
+
+load 100xcombs.mat;
+
+n = 5;
+theta = linspace(0, 2*pi, n+1); % +1 to close the loop
+theta(end) = []; % Remove duplic
+
+% Pentagon vertices on unit circle
+vx = cos(theta);
+vy = sin(theta);
+
+vertices = [vx; vy]; % 2 × 5 matrix
+
+
+[m, n] = size(aucData);
+
+points = [n, 5];
+
+for i = 1:n
+    for j = 1:5
+        aucPoints = aucData{1, i};
+        points(i, j) = aucPoints(1, j);
+    end
+end
+
+points = points / 20;
+
+positions = points * vertices';
+
+output = rand(100, 1);
+
+scatter(positions(:,1), positions(:,2), 60, output, 'filled')
+colormap jet
+colorbar
+axis equal
+hold on
+
+% Plot the pentagon outline
+plot([vx vx(1)], [vy vy(1)], 'k--', 'LineWidth', 1.5)
+
+% Label the corners
+labels = {'A','B','C','D','E'};
+for i = 1:5
+    text(vx(i)*1.1, vy(i)*1.1, labels{i}, 'FontWeight', 'bold', 'HorizontalAlignment','center')
+end
+
+title('Pentagon Plot of Variable Contributions')
