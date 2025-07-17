@@ -164,13 +164,13 @@ def run_single_auction(**kwargs) -> EnglishAuction:
     
     # Default parameters
     params = {
-        'common_value': 100,
-        'signal_std': 15,
+        'common_value': 1000,
+        'signal_std': 150,
         'n_bidders': 20,
-        'start_price': 20,
-        'price_increment': 1,
+        'start_price': 500,
+        'price_increment': 20,
         'steps': 1000,  # Large number to ensure auction completes
-        'a': 1/3  # Default value for a
+        'a': 1  # Default value for a
     }
     params.update(kwargs)
     
@@ -327,7 +327,7 @@ if __name__ == "__main__":
         n_bidders=20,
         start_price=20,
         price_increment=1,
-        a=1/3
+        a=.7
     )
     
     # Analyze and visualize
@@ -348,38 +348,3 @@ if __name__ == "__main__":
     )
     
     print("\nAll auctions completed!")
-
-        # === NEW: Sweep a from 0 to 1 and plot final price ===
-    print("\n" + "="*50)
-    print("SWEEPING a FROM 0 TO 1...")
-
-    a_values = np.arange(0.0, 1.01, 0.001)
-    final_prices = []
-
-    for a_val in a_values:
-        print(f"Running auction with a = {a_val:.2f}")
-        model = run_single_auction(
-            common_value=1000,
-            signal_std=150,
-            n_bidders=20,
-            start_price=600,
-            price_increment=1,
-            a=a_val
-        )
-        final_prices.append(model.final_price if model.final_price is not None else np.nan)
-
-    # Plot results
-    # Plot results — improved height and line clarity
-    plt.figure(figsize=(12, 8))  # Wider and taller
-    plt.plot(a_values, final_prices, linestyle='-', linewidth=2, color='blue', label='Final Price')
-    plt.scatter(a_values, final_prices, color='blue', s=10)  # Small dots to show individual data points
-    plt.axhline(1000, color='red', linestyle='--', linewidth=2, label='True Common Value')
-
-    plt.title("Final Auction Price vs a (Weight on Initial Signal)", fontsize=16)
-    plt.xlabel("a (Weight on Initial Signal)", fontsize=12)
-    plt.ylabel("Final Auction Price", fontsize=12)
-    plt.grid(True, alpha=0.3)
-    plt.legend()
-    plt.tight_layout()
-    plt.show()
-
