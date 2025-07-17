@@ -15,8 +15,8 @@ vertices = [vx; vy];
 % Separate point data and selling price data
 [m, n] = size(aucData);
 
-points = [n, 5];
-fprices = [n];
+points = zeros(n, 5);
+fprices = zeros(n, 1);
 
 for i = 1:n
     for j = 1:5
@@ -50,7 +50,3 @@ labels = {'\alpha = 0','\alpha = 0.3','\alpha = 0.5','\alpha = 0.7','\alpha = 1'
 for i = 1:5
     text(vx(i)*1.1, vy(i)*1.1, labels{i}, 'FontWeight', 'bold', 'HorizontalAlignment','center')
 end
-
-% To-do
-% different markers for bidder type
-% lighter outline
