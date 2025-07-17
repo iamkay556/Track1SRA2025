@@ -30,7 +30,7 @@ end
 
 % Normalize
 points = points / 20;
-fprices = fprices / 1300;
+fprices = fprices;
 
 % Calculate point positions
 positions = points * vertices';
@@ -46,7 +46,11 @@ colorbar
 axis equal
 
 % Label the corners
-labels = {'0','0.3','0.5','0.7','1'};
+labels = {'\alpha = 0','\alpha = 0.3','\alpha = 0.5','\alpha = 0.7','\alpha = 1'};
 for i = 1:5
     text(vx(i)*1.1, vy(i)*1.1, labels{i}, 'FontWeight', 'bold', 'HorizontalAlignment','center')
 end
+
+% To-do
+% different markers for bidder type
+% lighter outline

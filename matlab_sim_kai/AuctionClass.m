@@ -219,7 +219,7 @@ classdef AuctionClass
             hold on;
             
             % Plot prices over time
-            plot(t, obj.startPrice + (t * obj.priceIncrement));
+            plot(t, obj.startPrice + ((t - 1) * obj.priceIncrement));
             
             % Plot valuations over time
             [m, n] = size(obj.bidders);

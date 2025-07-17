@@ -40,6 +40,8 @@ classdef BidderClass
                 obj.stillIn = false;            % Change dropped status
                 obj.dropOutTime = time;         % Records current time step
                 obj.dropOutPrice = price;       % Record current price
+
+                obj.vals(1, time) = obj.vals(1, time - 1); % Adds one more point for the graph
             end
         end
 
