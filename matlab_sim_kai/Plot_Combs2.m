@@ -4,11 +4,12 @@ load 100xcombs_2.mat;
 
 % Get data from mat file
 [m, n] = size(aucData);
+nTypes = length(aucData{1, 1});
 
-bidderPops = zeros(n, 5);
-winTypes = zeros(n, 5);
-fprices = zeros(n, 5);
-avgdError = zeros(n, 5);
+bidderPops = zeros(n, nTypes);
+winTypes = zeros(n, nTypes);
+fprices = zeros(n, nTypes);
+avgdError = zeros(n, nTypes);
 
 for i = 1:n
     aucPop = aucData{1, i};
@@ -24,30 +25,79 @@ for i = 1:n
     avgdError(i, :) = aucErr(1, :);
 end
 
+% Graph items
 labels = {'\alpha = 0','\alpha = 0.3','\alpha = 0.5','\alpha = 0.7','\alpha = 1'};
 
-
-% Figue Function calls
-bar_winTypes(winTypes, labels);
-penta_fprice(bidderPops, winTypes, fprices, labels);
-
-
-% Functions / Figures
-
-% Bar chart of winner types
-function bar_winTypes(winTypes, labels)
-    sumWT = sum(winTypes, 1);
-
-    figure;
-    b = bar(labels, sumWT);
-
-    customColors = [
+customColors = [
         0.5, 0.7, 1.0;    % Light blue
         0.4, 1.0, 0.4;    % Light green
         1.0, 0.8, 0.2;    % Yellow
         1.0, 0.4, 0.4;    % Red
         0.6, 0.5, 1.0     % Purple
     ];
+
+
+% Figue Function calls
+penta_fprice(bidderPops, winTypes, fprices, labels);
+bar_winTypes_tr(winTypes, labels, customColors);
+bar_winTypes_tc(winTypes, labels, customColors);
+bar_winTypes_pr(winTypes, labels, customColors);
+bar_winTypes_pc(winTypes, labels, customColors);
+bar_dError_c(avgdError, labels, customColors);
+
+
+% Functions / Figures--------------------------------------------
+
+% Average dError by type accross all combinations
+function bar_dError_c(avgdError, labels, customColors)
+    avgADE = mean(avgdError, 1, 'omitnan')
+    length(avgADE)
+
+    figure;
+    b = bar(labels, avgADE);
+
+    % Apply the colors to each bar
+    for i = 1:length(avgADE)
+        b.FaceColor = 'flat';
+        b.CData(i, :) = customColors(i, :);
+    end
+    
+    % Label axes
+    xlabel('\alpha Value', 'FontSize', 16);
+    ylabel('Average \deltaError from Common Value', 'FontSize', 16);
+end
+
+
+% Bar chart of winner types by percentage of combinations won
+function bar_winTypes_pc(winTypes, labels, customColors)
+    winByComb = zeros(1, length(winTypes(1, :)));
+
+    for i = 1:length(winTypes)
+        [~, cWin] = max(winTypes(i, :));
+        winByComb(1, cWin) = winByComb(1, cWin) + 1;
+    end
+
+    figure;
+    b = bar(labels, winByComb/8855);
+
+    % Apply the colors to each bar
+    for i = 1:length(winByComb)
+        b.FaceColor = 'flat';
+        b.CData(i, :) = customColors(i, :);
+    end
+    
+    % Label axes
+    xlabel('\alpha Value', 'FontSize', 16);
+    ylabel('Combination Win Percent', 'FontSize', 16);
+end
+
+
+% Bar chart of winner types by percentage of runs won (when type present)
+function bar_winTypes_pr(winTypes, labels, customColors)
+    sumWT = sum(winTypes, 1);
+
+    figure;
+    b = bar(labels, sumWT/885500);
 
     % Apply the colors to each bar
     for i = 1:length(sumWT)
@@ -57,7 +107,50 @@ function bar_winTypes(winTypes, labels)
     
     % Label axes
     xlabel('\alpha Value', 'FontSize', 16);
-    ylabel('Win Count', 'FontSize', 16);
+    ylabel('Run Win Percent', 'FontSize', 16);
+end
+
+
+% Bar chart of winner types by total of combinations won
+function bar_winTypes_tc(winTypes, labels, customColors)
+    winByComb = zeros(1, length(winTypes(1, :)));
+
+    for i = 1:length(winTypes)
+        [~, cWin] = max(winTypes(i, :));
+        winByComb(1, cWin) = winByComb(1, cWin) + 1;
+    end
+
+    figure;
+    b = bar(labels, winByComb);
+
+    % Apply the colors to each bar
+    for i = 1:length(winByComb)
+        b.FaceColor = 'flat';
+        b.CData(i, :) = customColors(i, :);
+    end
+    
+    % Label axes
+    xlabel('\alpha Value', 'FontSize', 16);
+    ylabel('Combination Win Count', 'FontSize', 16);
+end
+
+
+% Bar chart of winner types accross all runs
+function bar_winTypes_tr(winTypes, labels, customColors)
+    sumWT = sum(winTypes, 1);
+
+    figure;
+    b = bar(labels, sumWT);
+
+    % Apply the colors to each bar
+    for i = 1:length(sumWT)
+        b.FaceColor = 'flat';
+        b.CData(i, :) = customColors(i, :);
+    end
+    
+    % Label axes
+    xlabel('\alpha Value', 'FontSize', 16);
+    ylabel('Run Win Count', 'FontSize', 16);
 end
 
 
@@ -65,7 +158,7 @@ end
 % Color is the average selling price
 function penta_fprice(bidderPops, winTypes, fprices, labels)
     % Pentagon vertices on unit circle
-    n = 5;
+    n = length(winTypes(1, :));
     theta = linspace(0, 2*pi, n+1); % +1 to close the loop
     theta(end) = []; % Remove duplicate
     
@@ -87,7 +180,7 @@ function penta_fprice(bidderPops, winTypes, fprices, labels)
         nan = isnan(fprices(i, :));
         sum = 0;
 
-        for j = 1:5
+        for j = 1:n
             if (nan(j) == 0)
                 sum = sum + (fprices(i, j) * winTypes(i, j));
             end
@@ -108,10 +201,11 @@ function penta_fprice(bidderPops, winTypes, fprices, labels)
     axis equal
     
     % Label the corners
-    for i = 1:5
+    for i = 1:n
         text(vx(i)*1.1, vy(i)*1.1, labels{i}, 'FontWeight', 'bold', 'HorizontalAlignment','center')
     end
     
     % Label colorbar
     ylabel(cb, 'Final Price', 'FontSize', 16, 'Rotation', -90);
 end
+

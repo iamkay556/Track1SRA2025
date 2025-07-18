@@ -1,6 +1,4 @@
 to do: 
-- different markers for bidder type winner
-- wintypes as a percentage of combs it was in
 - derror as bar chart?
 
 - code 3d plot for abg?
