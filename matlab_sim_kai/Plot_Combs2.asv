@@ -1,0 +1,90 @@
+clear; clc; close all;
+
+load 100xcombs_2.mat;
+
+% Get data from mat file
+[m, n] = size(aucData);
+
+bidderPops = zeros(n, 5);
+winTypes = zeros(n, 5);
+fprices = zeros(n, 5);
+avgdError = zeros(n, 5);
+
+for i = 1:n
+    aucPop = aucData{1, i};
+    bidderPops(i, :) = aucPop(1, :);
+
+    aucWT = aucData{2, i};
+    winTypes(i, :) = aucWT(1, :);
+
+    aucPrice = aucData{3, i};
+    fprices(i, :) = aucPrice(1, :);
+
+    aucErr = aucData{4, i};
+    avgdError(i, :) = aucErr(1, :);
+end
+
+% Function calls
+pie_winTypes(winTypes);
+penta_fprice(bidderPops, winTypes, fprices);
+
+
+% Functions / Figures
+
+% Pie chart of winner types
+function pie_winTypes(winTypes)
+    sumWT = winTypes(sum(:), 5);
+    pie(winTypes);
+end
+
+% Plot a pentagon with point coordinates aligning with bidder population
+% Color is the average selling price
+function penta_fprice(bidderPops, winTypes, fprices)
+    % Pentagon vertices on unit circle
+    n = 5;
+    theta = linspace(0, 2*pi, n+1); % +1 to close the loop
+    theta(end) = []; % Remove duplicate
+    
+    % Vertices
+    vx = cos(theta);
+    vy = sin(theta);
+    vertices = [vx; vy];
+    
+    % Normalize
+    bidderPops = bidderPops / 20;
+    
+    % Calculate point positions
+    positions = bidderPops * vertices';
+
+    % Average final prices accross bidder types
+    bprices = zeros(n, 1);
+    for i = 1:length(fprices)
+        % Skip NaNs
+        nan = isnan(fprices(i, :));
+        sum = 0;
+
+        for j = 1:5
+            if (nan(j) == 0)
+                sum = sum + (fprices(i, j) * winTypes(i, j));
+            end
+        end
+
+        bprices(i, 1) = sum / 100;
+    end
+    
+    % Plot the pentagon outline
+    plot([vx vx(1)], [vy vy(1)], "Color", '#a6a6a6', 'LineWidth', 1.5)
+    hold on
+    
+    % Plot bidderPops (Note: third parameter is dot size)
+    scatter(positions(:,1), positions(:,2), 20, bprices, 'filled')
+    colormap turbo
+    colorbar
+    axis equal
+    
+    % Label the corners
+    labels = {'\alpha = 0','\alpha = 0.3','\alpha = 0.5','\alpha = 0.7','\alpha = 1'};
+    for i = 1:5
+        text(vx(i)*1.1, vy(i)*1.1, labels{i}, 'FontWeight', 'bold', 'HorizontalAlignment','center')
+    end
+end

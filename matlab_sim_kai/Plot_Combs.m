@@ -30,7 +30,6 @@ end
 
 % Normalize
 points = points / 20;
-fprices = fprices;
 
 % Calculate point positions
 positions = points * vertices';

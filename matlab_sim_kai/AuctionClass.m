@@ -22,7 +22,7 @@ classdef AuctionClass
 
         % End Vars
         fprice;         % Int; selling price
-        wintype;        % Int; winning bidder's type
+        winID;          % MAtrix/Array; winning bidder's id
     end
 
 
@@ -118,7 +118,7 @@ classdef AuctionClass
             for i = 1:m
                 for j = 1:n
                     if (~isempty(obj.bidders{i, j}) & obj.bidders{i, j}.dropOutTime == obj.time)
-                        obj.wintype = obj.bidders{i, j}.id(1, 2);
+                        obj.winID = obj.bidders{i, j}.id;
 
                         found = true;
                         break;
@@ -136,7 +136,7 @@ classdef AuctionClass
                 obj.fprice = obj.dropOutPrices(1, end - 1);
             end
 
-            disp(["Winner Type: ", num2str(obj.wintype)])
+            disp(["Winner Type: ", num2str(obj.winID(1, 2))])
             disp(["Selling Price: ", num2str(obj.fprice)])
 
         end
@@ -213,24 +213,100 @@ classdef AuctionClass
                 return
             end
 
-            t = 1:obj.time;
+            t = 0:obj.time - 1;
 
             figure;
             hold on;
             
             % Plot prices over time
-            plot(t, obj.startPrice + ((t - 1) * obj.priceIncrement));
+            plot(t, obj.startPrice + (t * obj.priceIncrement));
             
+            % Color Set-up
+            customColors = containers.Map('KeyType', 'double', 'ValueType', 'any');
+            customColors(1) = [0, 0, 0];            % Black
+            customColors(2) = [0.5, 0.7, 1.0];      % Light blue
+            customColors(3) = [0.4, 1.0, 0.4];      % Light green
+            customColors(4) = [1.0, 0.8, 0.2];      % Yellow
+            customColors(5) = [1.0, 0.4, 0.4];      % Red
+            customColors(6) = [0.6, 0.5, 1.0 ];     % Purple
+            legendShown = containers.Map('KeyType', 'double', 'ValueType', 'logical');
+            legendHandles = containers.Map('KeyType', 'double', 'ValueType', 'any');
+
             % Plot valuations over time
             [m, n] = size(obj.bidders);
             for i = 1:m
                 for j = 1:n
-                    if (~isempty(obj.bidders{i, j}))
-                        y = obj.bidders{i, j}.vals;
-                        plot(y)
+                    b = obj.bidders{i, j};
+
+                    if (~isempty(b))
+                        b_id = b.id(1, 2);
+
+                        % Set color depending on id
+                        if isKey(customColors, b_id)
+                            color = customColors(b_id);
+                        else
+                            color = [0 0 0];
+                        end
+                        
+                        % Plotting valuations
+                        t_b = 0:(length(b.vals) - 1);
+                        y = b.vals;
+
+                        h = plot(t_b, y, 'Color', color, 'LineWidth', 1);
+
+                        if(b.id == obj.winID)
+                            plot(t_b(end), y(end), 'o', 'Color', color, 'MarkerSize', 8, 'LineWidth', 1);
+                        else
+                            plot(t_b(end), y(end), 'x', 'Color', color, 'MarkerSize', 8, 'LineWidth', 1);
+                        end
+                        
+                        % Legend prep: record labels to show
+                        if ~isKey(legendShown, b_id)
+                            legendHandles(b_id) = h;
+                            legendShown(b_id) = true;
+                        end
+
                     end
                 end
             end
+            
+            % Mark selling price
+            endTime = (obj.fprice - obj.startPrice) / obj.priceIncrement;
+            pcolor = [1.0, 0.4, 0.7];
+            plot(endTime, obj.fprice, '+', 'Color', 'b', 'MarkerSize', 8, 'LineWidth', 1);
+
+            % Labels
+            idLabels = containers.Map('KeyType', 'double', 'ValueType', 'char');
+            idLabels(1) = 'Average';
+            idLabels(2) = '\alpha = 0';
+            idLabels(3) = '\alpha = 0.3';
+            idLabels(4) = '\alpha = 0.5';
+            idLabels(5) = '\alpha = 0.7';
+            idLabels(6) = '\alpha = 1';
+            
+            % Legend: only show labels of bidders present
+            legendLabels = {};
+            legendObjects = [];
+            
+            typeKeys = keys(legendHandles);
+            for k = 1:length(typeKeys)
+                b_id = typeKeys{k};
+                legendObjects(end+1) = legendHandles(b_id);
+                
+                if isKey(idLabels, b_id)
+                    legendLabels{end+1} = idLabels(b_id);
+                else
+                    legendLabels{end+1} = sprintf('Type %d', b_id);
+                end
+            end
+            
+            % Add Legend
+            legend(legendObjects, legendLabels, 'Location', 'best', 'FontSize', 12);
+
+            % Axes
+            xlabel("Time (k)", 'FontSize', 16);
+            ylabel("Value", 'FontSize', 16);
+
         end
 
     end

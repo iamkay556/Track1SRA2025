@@ -1,15 +1,13 @@
 to do: 
-(pentagon)
-- save avg selling price when that type wins
-- avg percent improvement (signal - dropOutPrice)/commonVal per bidder type
-- different markers for bidder type / pie / histogram
-- lighter pentagon outline
+- different markers for bidder type winner
+- wintypes as a percentage of combs it was in
+- derror as bar chart?
 
-- color valuation lines by bidder type
-- code 3d plot for abg
+- code 3d plot for abg?
+
 - optimise
-- x on end of graph, add o on end for winner
+- label files
 - credits & readme (in the top git folder)
 
 
-BidderClass_Average works when the price increment is small
+BidderClass_Average works only when the price increment is small

@@ -9,23 +9,21 @@ priceIncrement = 20;
 
 % Bidders to pass into auction object
 nAverage = 0;
-nABG0 = 20;
+nABG0 = 0;
 nABG03 = 0;
 nABG05 = 0;
-nABG07 = 0;
+nABG07 = 20;
 nABG1 = 0;
 bidderTypes = [nAverage, nABG0, nABG03, nABG05, nABG07, nABG1];
 
 % Set runs
-j = 1000;
+j = 100;
 
 % Data pre-allocation
 auctions = {1, j};
 spmtx = [1, j];
 
-for i = 1:j
-    alpha = i/j;
-    
+for i = 1:j    
     disp(['Simulation ', num2str(i), ' / ', num2str(j), ' -----------------------'])
 
     % New auction object
@@ -43,12 +41,14 @@ for i = 1:j
 end
 
 disp("All Simulations Finished. --------------------")
-disp("Displaying Plots...")
+disp("Displaying Figures...")
 
 % Display Histogram of average selling price
 figure;
 histogram(spmtx);
-plot((1:j)/j, spmtx);
+
+% Plot fprices
+% plot((1:j)/j, spmtx);
 
 % Plot 10 valuations, evenly spaced (single runs)
 for i = 1:j

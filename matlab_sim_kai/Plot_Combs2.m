@@ -1,0 +1,117 @@
+clear; clc; close all;
+
+load 100xcombs_2.mat;
+
+% Get data from mat file
+[m, n] = size(aucData);
+
+bidderPops = zeros(n, 5);
+winTypes = zeros(n, 5);
+fprices = zeros(n, 5);
+avgdError = zeros(n, 5);
+
+for i = 1:n
+    aucPop = aucData{1, i};
+    bidderPops(i, :) = aucPop(1, :);
+
+    aucWT = aucData{2, i};
+    winTypes(i, :) = aucWT(1, :);
+
+    aucPrice = aucData{3, i};
+    fprices(i, :) = aucPrice(1, :);
+
+    aucErr = aucData{4, i};
+    avgdError(i, :) = aucErr(1, :);
+end
+
+labels = {'\alpha = 0','\alpha = 0.3','\alpha = 0.5','\alpha = 0.7','\alpha = 1'};
+
+
+% Figue Function calls
+bar_winTypes(winTypes, labels);
+penta_fprice(bidderPops, winTypes, fprices, labels);
+
+
+% Functions / Figures
+
+% Bar chart of winner types
+function bar_winTypes(winTypes, labels)
+    sumWT = sum(winTypes, 1);
+
+    figure;
+    b = bar(labels, sumWT);
+
+    customColors = [
+        0.5, 0.7, 1.0;    % Light blue
+        0.4, 1.0, 0.4;    % Light green
+        1.0, 0.8, 0.2;    % Yellow
+        1.0, 0.4, 0.4;    % Red
+        0.6, 0.5, 1.0     % Purple
+    ];
+
+    % Apply the colors to each bar
+    for i = 1:length(sumWT)
+        b.FaceColor = 'flat';
+        b.CData(i, :) = customColors(i, :);
+    end
+    
+    % Label axes
+    xlabel('\alpha Value', 'FontSize', 16);
+    ylabel('Win Count', 'FontSize', 16);
+end
+
+
+% Plot a pentagon with point coordinates aligning with bidder population
+% Color is the average selling price
+function penta_fprice(bidderPops, winTypes, fprices, labels)
+    % Pentagon vertices on unit circle
+    n = 5;
+    theta = linspace(0, 2*pi, n+1); % +1 to close the loop
+    theta(end) = []; % Remove duplicate
+    
+    % Vertices
+    vx = cos(theta);
+    vy = sin(theta);
+    vertices = [vx; vy];
+    
+    % Normalize
+    bidderPops = bidderPops / 20;
+    
+    % Calculate point positions
+    positions = bidderPops * vertices';
+
+    % Average final prices accross bidder types
+    bprices = zeros(n, 1);
+    for i = 1:length(fprices)
+        % Skip NaNs
+        nan = isnan(fprices(i, :));
+        sum = 0;
+
+        for j = 1:5
+            if (nan(j) == 0)
+                sum = sum + (fprices(i, j) * winTypes(i, j));
+            end
+        end
+
+        bprices(i, 1) = sum / 100;
+    end
+    
+    % Plot the pentagon outline
+    figure;
+    plot([vx vx(1)], [vy vy(1)], "Color", '#a6a6a6', 'LineWidth', 1.5)
+    hold on
+    
+    % Plot bidderPops (Note: third parameter is dot size)
+    scatter(positions(:,1), positions(:,2), 20, bprices, 'filled')
+    colormap turbo
+    cb = colorbar;
+    axis equal
+    
+    % Label the corners
+    for i = 1:5
+        text(vx(i)*1.1, vy(i)*1.1, labels{i}, 'FontWeight', 'bold', 'HorizontalAlignment','center')
+    end
+    
+    % Label colorbar
+    ylabel(cb, 'Final Price', 'FontSize', 16, 'Rotation', -90);
+end

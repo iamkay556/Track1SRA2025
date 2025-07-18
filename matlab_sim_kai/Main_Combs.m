@@ -69,7 +69,7 @@ for currComb = 1:combs
         auction = auction.runSim();
         
         % Save data from this run
-        winType = auction.wintype - 1;
+        winType = auction.winID(1, 2) - 1;
 
         winTypeCount(1, winType) = winTypeCount(1, winType) + 1;
         sellingPrices{1, winType}(end + 1) = auction.fprice;
@@ -96,14 +96,14 @@ for currComb = 1:combs
         avgfprice(l) = mean(sellingPrices{l}); 
     end
 
-    % Average percent improvement per bidder type
-    avgPerImprov = zeros(1, 5);
+    % Average change in error (from common val) per bidder type
+    avgdError = zeros(1, 5);
     for l = 1:5
-        avgPerImprov(l) = mean(dError{l}); 
+        avgdError(l) = mean(dError{l}); 
     end
 
     % Update data
-    aucData(:, currComb) = {[nABG0, nABG03, nABG05, nABG07, nABG1], winTypeCount, avgfprice, avgPerImprov};
+    aucData(:, currComb) = {[nABG0, nABG03, nABG05, nABG07, nABG1], winTypeCount, avgfprice, avgdError};
 end
 
 disp("All Simulations Finished. --------------------")
