@@ -38,23 +38,23 @@ customColors = [
     ];
 customColors = customColors / 255;
 
-font = 'arial';
+font = 'calibri'
 
 
 % Figue Function calls
-penta_fprice(bidderPops, winTypes, fprices, labels, font);
-bar_winTypes_tr(winTypes, labels, customColors, font);
-bar_winTypes_tc(winTypes, labels, customColors, font);
-bar_winTypes_pr(winTypes, labels, customColors, font);
-bar_winTypes_pc(winTypes, labels, customColors, font);
-bar_dError_c(avgdError, labels, customColors, font);
-bar_dCV(fprices, labels, customColors, font);
+penta_fprice(bidderPops, winTypes, fprices, labels);
+bar_winTypes_tr(winTypes, labels, customColors);
+bar_winTypes_tc(winTypes, labels, customColors);
+bar_winTypes_pr(winTypes, labels, customColors);
+bar_winTypes_pc(winTypes, labels, customColors);
+bar_dError_c(avgdError, labels, customColors);
+bar_dCV(fprices, labels, customColors);
 
 
 % Functions / Figures--------------------------------------------
 
 % Average difference to common value when bidder type wins
-function bar_dCV(fprices,labels, customColors, font)
+function bar_dCV(fprices,labels, customColors)
     avgdCV = mean(fprices, 1, 'omitnan');
     avgdCV = avgdCV - 1000;
 
@@ -77,7 +77,7 @@ end
 
 
 % Average dError by type accross all combinations
-function bar_dError_c(avgdError, labels, customColors, font)
+function bar_dError_c(avgdError, labels, customColors)
     avgADE = mean(avgdError, 1, 'omitnan');
 
     figure;
@@ -91,15 +91,12 @@ function bar_dError_c(avgdError, labels, customColors, font)
     
     % Label axes
     xlabel('\alpha Value', 'FontSize', 16);
-    ylabel('Average \DeltaError from Common Value', 'FontSize', 16);
-
-    % Set Font
-    fontname(font);
+    ylabel('Average \deltaError from Common Value', 'FontSize', 16);
 end
 
 
 % Bar chart of winner types by percentage of combinations won (when type present)
-function bar_winTypes_pc(winTypes, labels, customColors, font)
+function bar_winTypes_pc(winTypes, labels, customColors)
     winByComb = zeros(1, length(winTypes(1, :)));
 
     for i = 1:length(winTypes)
@@ -119,14 +116,11 @@ function bar_winTypes_pc(winTypes, labels, customColors, font)
     % Label axes
     xlabel('\alpha Value', 'FontSize', 16);
     ylabel('Combination Win Percent', 'FontSize', 16);
-
-    % Set Font
-    fontname(font);
 end
 
 
 % Bar chart of winner types by percentage of runs won (when type present)
-function bar_winTypes_pr(winTypes, labels, customColors, font)
+function bar_winTypes_pr(winTypes, labels, customColors)
     sumWT = sum(winTypes, 1);
 
     figure;
@@ -141,14 +135,11 @@ function bar_winTypes_pr(winTypes, labels, customColors, font)
     % Label axes
     xlabel('\alpha Value', 'FontSize', 16);
     ylabel('Run Win Percent', 'FontSize', 16);
-
-    % Set Font
-    fontname(font);
 end
 
 
 % Bar chart of winner types by total of combinations won
-function bar_winTypes_tc(winTypes, labels, customColors, font)
+function bar_winTypes_tc(winTypes, labels, customColors)
     winByComb = zeros(1, length(winTypes(1, :)));
 
     for i = 1:length(winTypes)
@@ -168,14 +159,11 @@ function bar_winTypes_tc(winTypes, labels, customColors, font)
     % Label axes
     xlabel('\alpha Value', 'FontSize', 16);
     ylabel('Combination Win Count', 'FontSize', 16);
-
-    % Set Font
-    fontname(font);
 end
 
 
 % Bar chart of winner types accross all runs
-function bar_winTypes_tr(winTypes, labels, customColors, font)
+function bar_winTypes_tr(winTypes, labels, customColors)
     sumWT = sum(winTypes, 1);
 
     figure;
@@ -190,15 +178,12 @@ function bar_winTypes_tr(winTypes, labels, customColors, font)
     % Label axes
     xlabel('\alpha Value', 'FontSize', 16);
     ylabel('Run Win Count', 'FontSize', 16);
-
-    % Set Font
-    fontname(font);
 end
 
 
 % Plot a pentagon with point coordinates aligning with bidder population
 % Color is the average selling price
-function penta_fprice(bidderPops, winTypes, fprices, labels, font)
+function penta_fprice(bidderPops, winTypes, fprices, labels)
     % Pentagon vertices on unit circle
     n = length(winTypes(1, :));
     theta = linspace(0, 2*pi, n+1); % +1 to close the loop
@@ -249,8 +234,5 @@ function penta_fprice(bidderPops, winTypes, fprices, labels, font)
     
     % Label colorbar
     ylabel(cb, 'Final Price', 'FontSize', 16, 'Rotation', -90);
-
-    % Set Font
-    fontname(font);
 end
 
