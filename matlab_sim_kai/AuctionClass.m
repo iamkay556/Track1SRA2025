@@ -305,7 +305,7 @@ classdef AuctionClass
 
             % Axes
             xlabel("Time (k)", 'FontSize', 16);
-            ylabel("Value", 'FontSize', 16);
+            ylabel("Value (V)", 'FontSize', 16);
 
             % Set Font
             fontname(font);

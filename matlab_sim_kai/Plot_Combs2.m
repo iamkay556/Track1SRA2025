@@ -38,11 +38,12 @@ customColors = [
     ];
 customColors = customColors / 255;
 
-font = 'arial';
+font = 'calibri';
 
 
 % Figue Function calls
 penta_fprice(bidderPops, winTypes, fprices, labels, font);
+penta_fprice(bidderPops, winTypes, fprices, labels, font, 950, 1050);
 bar_winTypes_tr(winTypes, labels, customColors, font);
 bar_winTypes_tc(winTypes, labels, customColors, font);
 bar_winTypes_pr(winTypes, labels, customColors, font);
@@ -198,7 +199,7 @@ end
 
 % Plot a pentagon with point coordinates aligning with bidder population
 % Color is the average selling price
-function penta_fprice(bidderPops, winTypes, fprices, labels, font)
+function penta_fprice(bidderPops, winTypes, fprices, labels, font, minfprice, maxfprice)
     % Pentagon vertices on unit circle
     n = length(winTypes(1, :));
     theta = linspace(0, 2*pi, n+1); % +1 to close the loop
@@ -230,6 +231,18 @@ function penta_fprice(bidderPops, winTypes, fprices, labels, font)
 
         bprices(i, 1) = sum / 100;
     end
+
+    % Filter by final price range
+    if nargin < 6
+        minfprice = -Inf;
+    end
+    if nargin < 7
+        maxfprice = Inf;
+    end
+    
+    inRange = (bprices >= minfprice) & (bprices <= maxfprice);
+    positions = positions(inRange, :);
+    bprices = bprices(inRange);
     
     % Plot the pentagon outline
     figure;
@@ -238,8 +251,6 @@ function penta_fprice(bidderPops, winTypes, fprices, labels, font)
     
     % Plot bidderPops (Note: third parameter is dot size)
     scatter(positions(:,1), positions(:,2), 20, bprices, 'filled')
-    colormap turbo
-    cb = colorbar;
     axis equal
     
     % Label the corners
@@ -247,7 +258,32 @@ function penta_fprice(bidderPops, winTypes, fprices, labels, font)
         text(vx(i)*1.1, vy(i)*1.1, labels{i}, 'FontWeight', 'bold', 'HorizontalAlignment','center')
     end
     
-    % Label colorbar
+    % Colorbar
+    colormap turbo
+    cb = colorbar;
+    
+    if (minfprice == -Inf)
+        climMin = 500;
+    else
+        climMin = minfprice;
+    end
+    if (maxfprice == Inf)
+        climMax = 1250;
+    else
+        climMax = maxfprice;
+    end
+    fullmap = turbo(256);
+    
+    idxMin = round( (climMin - 500) / (1250 - 500) * 255 ) + 1;
+    idxMax = round( (climMax - 500) / (1250 - 500) * 255 ) + 1;
+    idxMin = max(1, min(256, idxMin));
+    idxMax = max(1, min(256, idxMax));
+
+    submap = fullmap(idxMin:idxMax, :);
+    colormap(submap);
+    
+    clim([climMin climMax]);
+    cb.Ticks = climMin:50:climMax;
     ylabel(cb, 'Final Price', 'FontSize', 16, 'Rotation', -90);
 
     % Set Font
