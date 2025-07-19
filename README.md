@@ -57,7 +57,7 @@ Holds information over 20 runs for each of the 1000 alpha values.
 
 
 ### matlab_sim (Folder)
-Coded by Sophia Cheng. Minorly edited by Camryn Nguyen.
+Coded by Sophia Cheng, assisted by Camryn Nguyen.
 
 Auction simulation using MATLAB.
 
