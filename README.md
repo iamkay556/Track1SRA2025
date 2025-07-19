@@ -3,7 +3,9 @@
 Sophia Cheng, Camryn Nguyen, Kshitij Singhal
 
 ## General
-MATLAB and Python (Agentpy Library) simulations for an asceneding clock auction with different bidder types.
+MATLAB and Python (Agentpy Library) simulations for an asceneding clock auction with different bidder types. 
+
+ChatGPT was used for debugging and data plotting assistance.
 
 
 ## Files
