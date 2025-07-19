@@ -43,7 +43,7 @@ font = 'arial';
 
 % Figue Function calls
 penta_fprice(bidderPops, winTypes, fprices, labels, font);
-penta_fprice(bidderPops, winTypes, fprices, labels, font, 950, 1050);
+penta_fprice(bidderPops, winTypes, fprices, labels, font, 990, 1010);
 bar_winTypes_tr(winTypes, labels, customColors, font);
 bar_winTypes_tc(winTypes, labels, customColors, font);
 bar_winTypes_pr(winTypes, labels, customColors, font);
