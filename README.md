@@ -97,7 +97,7 @@ Contains unused BidderClass_Average class.
 Works more accurately the smaller the price increment is.
 
 #### Main_Alpha.m
-Runs multiple simulations, then provides a selling price histogram and valuation plots.
+Runs multiple simulations.
 
 #### Main_Combs.m
 Runs a number of simulations over every 5 strategy combination of 20 bidders. Automatically saves data once finished.
