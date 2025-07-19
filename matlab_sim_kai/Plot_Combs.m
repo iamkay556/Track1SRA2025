@@ -1,3 +1,4 @@
+% Plots pentagonal scatterplot to analyze 100xcombs.mat data.
 clear; clc; close all;
 
 load 100xcombs.mat;

@@ -1,3 +1,4 @@
+% Bidder with averaging bidder strategy
 classdef BidderClass_Average < BidderClass
 
     methods

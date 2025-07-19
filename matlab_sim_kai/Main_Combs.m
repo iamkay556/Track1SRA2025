@@ -1,4 +1,4 @@
-% Matlab English Auction Simulation
+% Runs simulations for every bidder strategy composition of 20 total bidders
 clear; clc; close all;
 
 % Values to pass into auction obrunsect

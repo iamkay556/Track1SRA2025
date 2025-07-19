@@ -1,4 +1,4 @@
-% Matlab English Auction Simulation
+% Runs multiple auction simulations. Provides selling price histogram and valuation plots.
 clear; clc; close all;
 
 % Values to pass into auction object

@@ -1,3 +1,4 @@
+% Bidder parent class with weighted valuation function
 classdef BidderClass_ABG < BidderClass
 
     properties

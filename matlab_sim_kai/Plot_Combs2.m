@@ -1,3 +1,4 @@
+% Plots pentagonal scattergram and bar graphs to analyze 100xcombs_2.mat data.
 clear; clc; close all;
 
 load 100xcombs_2.mat;
@@ -29,12 +30,13 @@ end
 labels = {'\alpha = 0','\alpha = 0.3','\alpha = 0.5','\alpha = 0.7','\alpha = 1'};
 
 customColors = [
-        0.5, 0.7, 1.0;    % Light blue
-        0.4, 1.0, 0.4;    % Light green
-        1.0, 0.8, 0.2;    % Yellow
-        1.0, 0.4, 0.4;    % Red
-        0.6, 0.5, 1.0     % Purple
+        128, 179, 255;      % Light blue
+        102, 255, 102;      % Light green
+        255, 204, 51;       % Yellow
+        255, 124, 124;      % Red
+        175, 156, 255       % Purple
     ];
+customColors = customColors / 255;
 
 
 % Figue Function calls
@@ -44,14 +46,34 @@ bar_winTypes_tc(winTypes, labels, customColors);
 bar_winTypes_pr(winTypes, labels, customColors);
 bar_winTypes_pc(winTypes, labels, customColors);
 bar_dError_c(avgdError, labels, customColors);
+bar_dCV(fprices, labels, customColors);
 
 
 % Functions / Figures--------------------------------------------
 
+% Average difference to common value when bidder type wins
+function bar_dCV(fprices,labels, customColors)
+    avgdCV = mean(fprices, 1, 'omitnan');
+    avgdCV = avgdCV - 1000;
+
+    figure;
+    b = bar(labels, avgdCV);
+
+    % Apply the colors to each bar
+    for i = 1:length(avgdCV)
+        b.FaceColor = 'flat';
+        b.CData(i, :) = customColors(i, :);
+    end
+    
+    % Label axes
+    xlabel('\alpha Value', 'FontSize', 16);
+    ylabel('Average Final Price Difference from Common Value', 'FontSize', 16);
+end
+
+
 % Average dError by type accross all combinations
 function bar_dError_c(avgdError, labels, customColors)
-    avgADE = mean(avgdError, 1, 'omitnan')
-    length(avgADE)
+    avgADE = mean(avgdError, 1, 'omitnan');
 
     figure;
     b = bar(labels, avgADE);
@@ -68,7 +90,7 @@ function bar_dError_c(avgdError, labels, customColors)
 end
 
 
-% Bar chart of winner types by percentage of combinations won
+% Bar chart of winner types by percentage of combinations won (when type present)
 function bar_winTypes_pc(winTypes, labels, customColors)
     winByComb = zeros(1, length(winTypes(1, :)));
 
