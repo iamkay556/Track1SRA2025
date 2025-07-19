@@ -38,7 +38,7 @@ customColors = [
     ];
 customColors = customColors / 255;
 
-font = 'calibri';
+font = 'arial';
 
 
 % Figue Function calls
@@ -243,7 +243,7 @@ function penta_fprice(bidderPops, winTypes, fprices, labels, font, minfprice, ma
     inRange = (bprices >= minfprice) & (bprices <= maxfprice);
     positions = positions(inRange, :);
     bprices = bprices(inRange);
-    
+
     % Plot the pentagon outline
     figure;
     plot([vx vx(1)], [vy vy(1)], "Color", '#a6a6a6', 'LineWidth', 1.5)
@@ -252,6 +252,13 @@ function penta_fprice(bidderPops, winTypes, fprices, labels, font, minfprice, ma
     % Plot bidderPops (Note: third parameter is dot size)
     scatter(positions(:,1), positions(:,2), 20, bprices, 'filled')
     axis equal
+    
+    % Average Point Location
+    if (~isinf(minfprice) || ~isinf(maxfprice))
+        avgPoint = [mean(positions(:, 1)), mean(positions(:, 2))];
+        scatter(avgPoint(1, 1), avgPoint(1, 2), 20, 'filled', 'diamond','MarkerFaceColor','b');
+        disp(['Min: ', num2str(minfprice), ' Max: ', num2str(maxfprice), ' Avg Point: ', num2str(avgPoint(1, 1)), ', ', num2str(avgPoint(1, 2))])
+    end
     
     % Label the corners
     for i = 1:n

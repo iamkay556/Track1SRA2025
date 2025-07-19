@@ -31,7 +31,7 @@ labels = {'\alpha = 0','\alpha = 0.3','\alpha = 0.5','\alpha = 0.7','\alpha = 1'
 
 customColors = [
         128, 179, 255;      % Light blue
-        102, 255, 102;      % Light green
+        130, 236, 109;      % Light green
         255, 204, 51;       % Yellow
         255, 124, 124;      % Red
         175, 156, 255       % Purple
@@ -243,7 +243,7 @@ function penta_fprice(bidderPops, winTypes, fprices, labels, font, minfprice, ma
     inRange = (bprices >= minfprice) & (bprices <= maxfprice);
     positions = positions(inRange, :);
     bprices = bprices(inRange);
-    
+
     % Plot the pentagon outline
     figure;
     plot([vx vx(1)], [vy vy(1)], "Color", '#a6a6a6', 'LineWidth', 1.5)
@@ -252,6 +252,10 @@ function penta_fprice(bidderPops, winTypes, fprices, labels, font, minfprice, ma
     % Plot bidderPops (Note: third parameter is dot size)
     scatter(positions(:,1), positions(:,2), 20, bprices, 'filled')
     axis equal
+
+    avgPoint = [mean(positions(:, 1)), mean(positions(:, 2))];
+    disp(['Min: ', num2str(minfprice), ' Max: ', num2str(maxfprice), ' Avg Point: ', num2str(avgPoint(1, 1)), ', ', num2str(avgPoint(1, 2))])
+    
     
     % Label the corners
     for i = 1:n
@@ -273,7 +277,13 @@ function penta_fprice(bidderPops, winTypes, fprices, labels, font, minfprice, ma
         climMax = maxfprice;
     end
     fullmap = turbo(256);
-    submap = fullmap(climMin*256/1250:climMax*256/1250, :);
+    
+    idxMin = round( (climMin - 500) / (1250 - 500) * 255 ) + 1;
+    idxMax = round( (climMax - 500) / (1250 - 500) * 255 ) + 1;
+    idxMin = max(1, min(256, idxMin));
+    idxMax = max(1, min(256, idxMax));
+
+    submap = fullmap(idxMin:idxMax, :);
     colormap(submap);
     
     clim([climMin climMax]);
