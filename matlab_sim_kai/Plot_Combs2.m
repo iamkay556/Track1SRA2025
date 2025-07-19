@@ -31,7 +31,7 @@ labels = {'\alpha = 0','\alpha = 0.3','\alpha = 0.5','\alpha = 0.7','\alpha = 1'
 
 customColors = [
         128, 179, 255;      % Light blue
-        102, 255, 102;      % Light green
+        130, 236, 109;      % Light green
         255, 204, 51;       % Yellow
         255, 124, 124;      % Red
         175, 156, 255       % Purple

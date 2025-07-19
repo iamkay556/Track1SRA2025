@@ -223,12 +223,12 @@ classdef AuctionClass
             
             % Color Set-up
             customColors = containers.Map('KeyType', 'double', 'ValueType', 'any');
-            customColors(1) = [0, 0, 0];            % Black
-            customColors(2) = [0.5, 0.7, 1.0];      % Light blue
-            customColors(3) = [0.4, 1.0, 0.4];      % Light green
-            customColors(4) = [1.0, 0.8, 0.2];      % Yellow
-            customColors(5) = [1.0, 0.4, 0.4];      % Red
-            customColors(6) = [0.6, 0.5, 1.0 ];     % Purple
+            customColors(1) = [0, 0, 0];                % Black
+            customColors(2) = [128, 179, 255]/255;      % Light blue
+            customColors(3) = [130, 236, 109]/255;      % Light green
+            customColors(4) = [255, 204, 51]/255;       % Yellow
+            customColors(5) = [255, 124, 124]/255;      % Red
+            customColors(6) = [175, 156, 255]/255;      % Purple
             legendShown = containers.Map('KeyType', 'double', 'ValueType', 'logical');
             legendHandles = containers.Map('KeyType', 'double', 'ValueType', 'any');
 
