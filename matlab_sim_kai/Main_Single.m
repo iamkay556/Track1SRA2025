@@ -26,4 +26,4 @@ auction = auction.setBidders(bidderTypes);
 auction = auction.runSim();
 
 % Plot valuations vs time
-auction = auction.displayPlots();
+auction = auction.displayPlots("arial");

@@ -208,7 +208,7 @@ classdef AuctionClass
 
 
         % Displays Plots
-        function obj = displayPlots(obj)
+        function obj = displayPlots(obj, font)
             if (obj.numBidders < 2)
                 return
             end
@@ -306,6 +306,9 @@ classdef AuctionClass
             % Axes
             xlabel("Time (k)", 'FontSize', 16);
             ylabel("Value", 'FontSize', 16);
+
+            % Set Font
+            fontname(font);
 
         end
 

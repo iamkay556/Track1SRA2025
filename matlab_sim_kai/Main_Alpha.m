@@ -53,7 +53,7 @@ histogram(spmtx);
 % Plot 10 valuations, evenly spaced (single runs)
 for i = 1:j
     if (mod(i, j/10) == 0)
-        auctions{1, i} = auctions{1, i}.displayPlots();
+        auctions{1, i} = auctions{1, i}.displayPlots("arial");
     end
 end
 
