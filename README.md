@@ -3,7 +3,7 @@
 Sophia Cheng, Camryn Nguyen, Kshitij Singhal
 
 ## General
-MATLAB and Python (Agentpy Library) simulations for an asceneding clock auction with different bidder types. 
+MATLAB and Python (AgentPy Library) simulations for an ascending clock auction with different bidder types. 
 
 ChatGPT was used for debugging and data plotting assistance.
 
@@ -14,7 +14,7 @@ Listed in order as in GitHub.
 ### agentpy_sim (Folder)
 Coded by Kshitij Singhal. Minorly edited by Sophia Cheng.
 
-Auction simulation in Python using the Agentpy library.
+Auction simulation in Python using the AgentPy library.
 
 #### Robust Auction (Subfolder)
 Files for the auction, bidders, and runner are in separate files. Calculates and saves more information than the Simple_Auction folder code. Includes plots.
@@ -112,3 +112,6 @@ For 100xcombs.mat. Graphs pentagonal scatterplot displaying bidder strategy comp
 
 #### Plot_Combs2.m
 For 100xcombs2.mat. Graphs pentagonal scatterplot displaying bidder strategy composition and final selling price. Also creates bar charts to compare winner types, winner's curse, and strategy effectiveness.
+
+#### WinPercentBarGraphPairwise.m
+Creates a bar graph of bidders' win percentages based on auctions of pairwise matchups. 
