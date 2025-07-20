@@ -9,11 +9,11 @@ priceIncrement = 20;
 
 % Bidders to pass into auction object
 nAverage = 0;
-nABG0 = 0;
+nABG0 = 5;
 nABG03 = 0;
-nABG05 = 0;
-nABG07 = 20;
-nABG1 = 0;
+nABG05 = 10;
+nABG07 = 0;
+nABG1 = 5;
 bidderTypes = [nAverage, nABG0, nABG03, nABG05, nABG07, nABG1];
 
 % New auction object
