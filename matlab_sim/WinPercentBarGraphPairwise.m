@@ -1,88 +1,87 @@
-% Simple bar graph for auction win percentages
-clear; clc; close all;
+% === Bidder Types ===
+bidder_types = {'Malleable', 'Strategic', 'Balanced', 'Confident', 'Static'};
 
-%% ========== INPUT DATA ==========
-% 10 auction groups, each with 2 bidder types
-% Types: 1=Malleable, 2=Strategic, 3=Balanced, 4=Confident, 5=Static
-
-% Format: [Type1_ID, Type1_%, Type2_ID, Type2_%]
-auction1 = [1, 30, 5, 70];  % Malleable vs Static
-auction2 = [2, 45, 4, 55];  % Strategic vs Confident  
-auction3 = [3, 50, 1, 50];  % Balanced vs Malleable
-auction4 = [4, 65, 2, 35];  % Confident vs Strategic
-auction5 = [5, 20, 3, 80];  % Static vs Balanced
-auction6 = [1, 40, 2, 60];  % Malleable vs Strategic
-auction7 = [3, 55, 4, 45];  % Balanced vs Confident
-auction8 = [2, 75, 5, 25];  % Strategic vs Static
-auction9 = [4, 80, 1, 20];  % Confident vs Malleable
-auction10 = [5, 35, 3, 65]; % Static vs Balanced
-
-%% ========== SETUP ==========
-% Combine all data
-all_auctions = [auction1; auction2; auction3; auction4; auction5; 
-                auction6; auction7; auction8; auction9; auction10];
-
-% Colors for each type
-type_colors = [
-    0.9, 0.3, 0.3;  % 1=Malleable: Red
-    0.2, 0.6, 0.9;  % 2=Strategic: Blue  
-    0.4, 0.8, 0.4;  % 3=Balanced: Green
-    0.9, 0.7, 0.2;  % 4=Confident: Yellow
-    0.6, 0.6, 0.6   % 5=Static: Gray
+% Assign a unique color to each bidder type
+colors = [
+    0.52, 0.72, 1.0;   % Malleable - Blue
+    0.51, 0.93, 0.43;  % Strategic - Green
+    1.0, 0.8, 0.2;     % Balanced - Orange
+    1.0, 0.49, 0.49;   % Confident - Red
+    0.69, 0.61, 1.0    % Static - Purple
 ];
 
-type_names = {'Malleable', 'Strategic', 'Balanced', 'Confident', 'Static'};
+% === Matchups (10 total) ===
+matchups = {
+    'Malleable', 'Strategic';
+    'Malleable', 'Balanced';
+    'Malleable', 'Confident';
+    'Malleable', 'Static';
+    'Strategic', 'Balanced';
+    'Strategic', 'Confident';
+    'Strategic', 'Static';
+    'Balanced', 'Confident';
+    'Balanced', 'Static';
+    'Confident', 'Static';
+};
 
-%% ========== CREATE PLOT ==========
-figure('Position', [100, 100, 1200, 600]);
+% === Win data: each row is a matchup with two values summing to 100
+win_data = [
+    0, 100;
+    0, 100;
+    0, 100;
+    0, 100;
+    15.9, 84.1;
+    4.4, 95.6;
+    1.2, 98.8;
+    28.3, 71.7;
+    10.7, 89.3;
+    28.7, 71.3
+];
 
-% Create bar positions
-x_positions = 1:20;
-group_positions = reshape(x_positions, 2, 10)';
+% === Format bar data into 10 x 5 matrix (matchups x bidder types)
+bar_data = zeros(size(win_data,1), length(bidder_types));
+for i = 1:size(matchups, 1)
+    A = matchups{i, 1};
+    B = matchups{i, 2};
 
-% Plot each bar
-hold on;
-for i = 1:10
-    % First bar of group
-    type1_id = all_auctions(i, 1);
-    type1_pct = all_auctions(i, 2);
-    bar(group_positions(i,1), type1_pct, 'FaceColor', type_colors(type1_id,:), 'BarWidth', 0.8);
-    
-    % Second bar of group  
-    type2_id = all_auctions(i, 3);
-    type2_pct = all_auctions(i, 4);
-    bar(group_positions(i,2), type2_pct, 'FaceColor', type_colors(type2_id,:), 'BarWidth', 0.8);
+    idx_A = find(strcmp(bidder_types, A));
+    idx_B = find(strcmp(bidder_types, B));
+
+    bar_data(i, idx_A) = win_data(i, 1);
+    bar_data(i, idx_B) = win_data(i, 2);
 end
 
-%% ========== FORMATTING ==========
-% Labels and limits
-xlabel('Auction Groups', 'FontSize', 12);
-ylabel('Win Percentage (%)', 'FontSize', 12);
-title('Bidder Type Win Percentages Across Auctions', 'FontSize', 14);
-ylim([0, 100]);
-
-% X-axis ticks at group centers
-group_centers = mean(group_positions, 2);
-set(gca, 'XTick', group_centers);
-set(gca, 'XTickLabel', 1:10);
-
-% Add percentage labels on bars
-for i = 1:10
-    text(group_positions(i,1), all_auctions(i,2)+2, sprintf('%.0f%%', all_auctions(i,2)), ...
-         'HorizontalAlignment', 'center', 'FontSize', 9);
-    text(group_positions(i,2), all_auctions(i,4)+2, sprintf('%.0f%%', all_auctions(i,4)), ...
-         'HorizontalAlignment', 'center', 'FontSize', 9);
+% === Plot stacked bar chart
+figure('Color','w', 'Position', [100, 100, 1200, 600]);
+b = bar(bar_data, 'stacked', 'BarWidth', 0.6);
+for i = 1:length(bidder_types)
+    b(i).FaceColor = colors(i,:);
 end
 
-% Legend
-legend_handles = [];
-for i = 1:5
-    h = bar(NaN, NaN, 'FaceColor', type_colors(i,:));
-    legend_handles(end+1) = h;
+% === Add percentage labels inside each bar section
+for bar_i = 1:size(bar_data, 1)  % loop through matchups
+    tot_height = 0;
+    for type_i = 1:length(bidder_types)
+        val = bar_data(bar_i, type_i);
+        if val > 0
+            y_pos = tot_height + val / 2;
+            text(bar_i, y_pos, sprintf('%.1f%%', val), ...
+                'HorizontalAlignment', 'center', ...
+                'VerticalAlignment', 'middle', ...
+                'FontSize', 10, 'Color', 'black', ...
+                'FontWeight', 'bold', 'FontName', 'Arial');
+            tot_height = tot_height + val;
+        end
+    end
 end
-legend(legend_handles, type_names, 'Location', 'best');
 
-grid on;
-hold off;
+% === Axis and Labels
+xticks(1:10)
+xticklabels(strcat(matchups(:,1), {' vs '}, matchups(:,2)))
+xtickangle(30)
 
-disp('Bar graph created! Modify the auction data at the top to update.');
+ylabel('Win Percentage (%)', 'FontName', 'Arial', 'FontSize', 16)
+ylim([0 100])
+set(gca, 'FontSize', 16, 'FontName', 'Arial')
+legend(bidder_types, 'Location', 'eastoutside', 'FontSize', 12, 'FontName', 'Arial')
+grid on
