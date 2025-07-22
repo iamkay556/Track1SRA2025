@@ -69,6 +69,10 @@ function bar_dCV(fprices,labels, customColors, font)
     end
     
     % Axes Formatting
+    ax = gca;
+    ax.FontSize = 18;
+    ax.TickLength = [0.02 0.02];
+    ax.LineWidth = 1.5;  
     xlabel('\alpha Value', 'FontSize', 16);
     ylabel('Average Final Price Difference from Common Value', 'FontSize', 16);
     
@@ -166,7 +170,7 @@ function bar_winTypes_tc(winTypes, labels, customColors, font)
         b.CData(i, :) = customColors(i, :);
     end
     
-    % Label axes 
+    % Label axes
     xlabel('\alpha Value', 'FontSize', 16);
     ylabel('Combination Win Count', 'FontSize', 16);
 
