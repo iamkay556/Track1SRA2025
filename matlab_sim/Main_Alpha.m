@@ -11,14 +11,14 @@ priceIncrement = 20;
 nAverage = 0;
 nABG0 = 0;
 nABG03 = 0;
-nABG05 = 0;
-nABG07 = 0;
-nABG1 = 20;
+nABG05 = 10;
+nABG07 = 10;
+nABG1 = 0;
 
 bidderTypes = [nAverage, nABG0, nABG03, nABG05, nABG07, nABG1];
 
 % Set runs
-j = 1000;
+j = 10000;
 
 % Determine which bidder types are actually present
 numBidderTypes = length(bidderTypes);
