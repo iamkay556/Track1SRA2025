@@ -66,7 +66,7 @@ Auction simulation using MATLAB.
 #### 100xcombs.mat
 Holds minor information over 100 runs for each of the bidder strategy compositions.
 
-#### 100xcombs2.mat
+#### 100xcombs_2.mat
 Holds more information (than 100xcombs.mat) over 100 runs for each of the bidder strategy compositions. 
 
 #### AuctionClass.m
@@ -95,8 +95,10 @@ Contains BidderClass_ABG1 child class.
 
 #### BidderClass_Average.m
 Contains unused BidderClass_Average class.
-
 Works more accurately the smaller the price increment is.
+
+#### CustomBidder.m
+Contains CustomBidder class.
 
 #### Main_Alpha.m
 Runs multiple simulations.
@@ -115,3 +117,15 @@ For 100xcombs2.mat. Graphs pentagonal scatterplot displaying bidder strategy com
 
 #### WinPercentBarGraphPairwise.m
 Creates a bar graph of bidders' win percentages based on auctions of pairwise matchups. 
+
+#### AlphaAnalysisResults.mat
+Contains data on signal differences, alpha differences, and win rate.
+
+#### AlphaSignalAnalysisResults.mat
+Contains data on signal differences and win rate.
+
+#### Main_AlphaDiff.m
+Runs pairwise simulations and saves data on winners and signals.
+
+#### ScatterTest.m
+Scatterplot of alpha differences and signal differences.
