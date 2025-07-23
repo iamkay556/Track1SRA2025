@@ -69,6 +69,12 @@ Holds minor information over 100 runs for each of the bidder strategy compositio
 #### 100xcombs_2.mat
 Holds more information (than 100xcombs.mat) over 100 runs for each of the bidder strategy compositions. 
 
+#### AlphaAnalysisResults.mat
+Contains data on signal differences, alpha differences, and win rate.
+
+#### AlphaSignalAnalysisResults.mat
+Contains data on signal differences and win rate.
+
 #### AuctionClass.m
 Contains AuctionClass class.
 
@@ -97,11 +103,17 @@ Contains BidderClass_ABG1 child class.
 Contains unused BidderClass_Average class.
 Works more accurately the smaller the price increment is.
 
+#### CustomAlphaBidder.m
+Contains CustomAlphaBidder class. Subclass of handle.
+
 #### CustomBidder.m
-Contains CustomBidder class.
+Contains CustomBidder child class.
 
 #### Main_Alpha.m
 Runs multiple simulations.
+
+#### Main_AlphaDiff.m
+Runs pairwise simulations and saves data on winners and signals.
 
 #### Main_Combs.m
 Runs a number of simulations over every 5 strategy combination of 20 bidders. Automatically saves data once finished.
@@ -117,15 +129,6 @@ For 100xcombs2.mat. Graphs pentagonal scatterplot displaying bidder strategy com
 
 #### WinPercentBarGraphPairwise.m
 Creates a bar graph of bidders' win percentages based on auctions of pairwise matchups. 
-
-#### AlphaAnalysisResults.mat
-Contains data on signal differences, alpha differences, and win rate.
-
-#### AlphaSignalAnalysisResults.mat
-Contains data on signal differences and win rate.
-
-#### Main_AlphaDiff.m
-Runs pairwise simulations and saves data on winners and signals.
 
 #### ScatterTest.m
 Scatterplot of alpha differences and signal differences.
